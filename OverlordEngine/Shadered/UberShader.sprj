@@ -1,0 +1,181 @@
+<?xml version="1.0"?>
+<project version="2">
+	<pipeline>
+		<pass name="Simple" type="shader" active="true" patchverts="1">
+			<shader type="vs" path="shaders\UberShader_SimpleVS.hlsl" entry="main" />
+			<shader type="ps" path="shaders\UberShader_SimplePS.hlsl" entry="main" />
+			<inputlayout>
+				<item value="Position" semantic="POSITION" />
+				<item value="Normal" semantic="NORMAL" />
+				<item value="Tangent" semantic="TEXCOORD0" />
+				<item value="Texcoord" />
+			</inputlayout>
+			<rendertexture />
+			<items>
+				<item name="Box" type="geometry">
+					<type>Cube</type>
+					<width>1</width>
+					<height>1</height>
+					<depth>1</depth>
+					<topology>TriangleList</topology>
+				</item>
+			</items>
+			<itemvalues />
+			<variables>
+				<variable type="float4x4" name="matVP" system="ViewProjection" />
+				<variable type="float4x4" name="matGeo" system="GeometryTransform" />
+				<variable type="float4x4" name="gMatrixWorldViewProj" system="ViewProjection" />
+				<variable type="float4x4" name="gMatrixWorld" system="GeometryTransform" />
+				<variable type="float4" name="gColorDiffuse">
+					<row>
+						<value>0.800000012</value>
+						<value>1</value>
+						<value>0.800000012</value>
+						<value>0.600000024</value>
+					</row>
+				</variable>
+				<variable type="float3" name="gLightDirection">
+					<row>
+						<value>1.20000005</value>
+						<value>-1.10000002</value>
+						<value>-0.800000012</value>
+					</row>
+				</variable>
+				<variable type="float4" name="gColorAmbient">
+					<row>
+						<value>0</value>
+						<value>0</value>
+						<value>0</value>
+						<value>0.899999976</value>
+					</row>
+				</variable>
+				<variable type="float" name="gAmbientIntensity">
+					<row>
+						<value>0.99000001</value>
+					</row>
+				</variable>
+				<variable type="float4x4" name="matW">
+					<row>
+						<value>0</value>
+						<value>0</value>
+						<value>0</value>
+						<value>0</value>
+					</row>
+					<row>
+						<value>0</value>
+						<value>0</value>
+						<value>0</value>
+						<value>0</value>
+					</row>
+					<row>
+						<value>0</value>
+						<value>0</value>
+						<value>0</value>
+						<value>0</value>
+					</row>
+					<row>
+						<value>0</value>
+						<value>0</value>
+						<value>0</value>
+						<value>0</value>
+					</row>
+				</variable>
+				<variable type="float4" name="gColorSpecular">
+					<row>
+						<value>0</value>
+						<value>0</value>
+						<value>0</value>
+						<value>0</value>
+					</row>
+				</variable>
+				<variable type="int" name="gShininess">
+					<row>
+						<value>0</value>
+					</row>
+				</variable>
+				<variable type="int" name="gUseDiffuseTexture">
+					<row>
+						<value>0</value>
+					</row>
+				</variable>
+				<variable type="int" name="gUseSpecularTexture">
+					<row>
+						<value>0</value>
+					</row>
+				</variable>
+				<variable type="int" name="gUseNormalTexture">
+					<row>
+						<value>0</value>
+					</row>
+				</variable>
+				<variable type="int" name="gFlipGreenChannel">
+					<row>
+						<value>0</value>
+					</row>
+				</variable>
+				<variable type="int" name="gUseFresnelFalloff" system="ViewportSize" />
+				<variable type="float4" name="gColorFresnel" system="ViewportSize" />
+				<variable type="float" name="gFresnelPower" system="ViewportSize" />
+				<variable type="float" name="gFresnelMultiplier" system="ViewportSize" />
+				<variable type="float" name="gFresnelHardness" system="ViewportSize" />
+				<variable type="int" name="gUseOpacityTexture">
+					<row>
+						<value>0</value>
+					</row>
+				</variable>
+				<variable type="float" name="gOpacityIntensity">
+					<row>
+						<value>0</value>
+					</row>
+				</variable>
+				<variable type="int" name="gUseSpecularBlin">
+					<row>
+						<value>0</value>
+					</row>
+				</variable>
+				<variable type="int" name="gUseSpecularPhong">
+					<row>
+						<value>0</value>
+					</row>
+				</variable>
+			</variables>
+			<macros />
+		</pass>
+	</pipeline>
+	<objects>
+		<object type="texture" path="vehicle_diffuse.png" vflip="false" min_filter="Linear" mag_filter="Nearest" wrap_s="Repeat" wrap_t="Repeat">
+			<bind slot="0" name="Simple" />
+		</object>
+		<object type="texture" path="vehicle_normal.png" vflip="false" min_filter="Linear" mag_filter="Nearest" wrap_s="Repeat" wrap_t="Repeat" />
+		<object type="texture" path="vehicle_gloss.png" vflip="false" min_filter="Linear" mag_filter="Nearest" wrap_s="Repeat" wrap_t="Repeat" />
+		<object type="texture" path="vehicle_specular.png" vflip="false" min_filter="Linear" mag_filter="Nearest" wrap_s="Repeat" wrap_t="Repeat" />
+	</objects>
+	<cameras />
+	<settings>
+		<entry type="file" name="Simple" shader="vs" />
+		<entry type="file" name="Simple" shader="ps" />
+		<entry type="pinned" name="gColorDiffuse" owner="Simple" />
+		<entry type="pinned" name="gLightDirection" owner="Simple" />
+		<entry type="pinned" name="gColorAmbient" owner="Simple" />
+		<entry type="pinned" name="gAmbientIntensity" owner="Simple" />
+		<entry type="pinned" name="gColorSpecular" owner="Simple" />
+		<entry type="pinned" name="gShininess" owner="Simple" />
+		<entry type="pinned" name="gUseDiffuseTexture" owner="Simple" />
+		<entry type="pinned" name="gUseSpecularTexture" owner="Simple" />
+		<entry type="pinned" name="gUseNormalTexture" owner="Simple" />
+		<entry type="pinned" name="gFlipGreenChannel" owner="Simple" />
+		<entry type="pinned" name="gUseOpacityTexture" owner="Simple" />
+		<entry type="pinned" name="gOpacityIntensity" owner="Simple" />
+		<entry type="pinned" name="gUseSpecularBlin" owner="Simple" />
+		<entry type="pinned" name="gUseSpecularPhong" owner="Simple" />
+		<entry type="camera" fp="false">
+			<distance>5</distance>
+			<pitch>33</pitch>
+			<yaw>118</yaw>
+			<roll>360</roll>
+		</entry>
+		<entry type="clearcolor" r="0" g="0" b="0" a="1" />
+		<entry type="usealpha" val="false" />
+	</settings>
+	<plugindata />
+</project>
