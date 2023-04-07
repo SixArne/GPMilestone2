@@ -125,6 +125,27 @@ void TransformComponent::Translate(const XMVECTOR& position)
 	XMStoreFloat3(&m_Position, position);
 }
 
+void TransformComponent::Move(float x, float y, float z)
+{
+	m_IsTransformChanged |= TransformChanged::TRANSLATION;
+	m_Position.x += x;
+	m_Position.y += y;
+	m_Position.z += z;
+}
+
+void TransformComponent::Move(const XMFLOAT3& position)
+{
+	Move(position.x, position.y, position.z);
+}
+
+void TransformComponent::Move(const XMVECTOR& position)
+{
+	XMFLOAT3 pos{};
+	XMStoreFloat3(&pos, position);
+
+	Move(pos.x, pos.y, pos.z);
+}
+
 void TransformComponent::Rotate(float x, float y, float z, bool degrees)
 {
 	//if (!CheckConstraints())

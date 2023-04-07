@@ -1,5 +1,9 @@
 #pragma once
-class UberMaterialScene final: public GameScene
+
+class UberMaterial;
+class GameObject;
+
+class UberMaterialScene final : public GameScene
 {
 public:
 	UberMaterialScene() : GameScene(L"UberMaterialScene") {};
@@ -15,6 +19,9 @@ protected:
 	void Update() override;
 	void Draw() override;
 	void OnGUI() override;
+
 private:
+	UberMaterial* m_pUberMaterial{};
+	GameObject* m_pMesh{};
 };
 

@@ -38,6 +38,13 @@ void ModelTestScene::Initialize()
 
 	// create ground plane
 	GameSceneExt::CreatePhysXGroundPlane(*this);
+
+	// Setup Camera
+	FreeCamera* pCamera = new FreeCamera();
+	pCamera->GetTransform()->Translate(0.f, 0.f, -50.f);
+	pCamera->GetTransform()->Rotate(0.f, 0.f, 0.f);
+	AddChild(pCamera);
+	SetActiveCamera(pCamera->GetComponent<CameraComponent>());
 }
 
 void ModelTestScene::Update()

@@ -10,6 +10,8 @@ enum class PxTriggerAction
 class GameObject
 {
 public:
+	friend class GameScene;
+
 	typedef std::function<void (GameObject* pTriggerObject, GameObject* pOtherObject, PxTriggerAction action)> PhysicsCallback;
 
 	GameObject();
@@ -128,12 +130,14 @@ public:
 		}
 		return children;
 	}
+
 #pragma endregion Template Methods
 
 protected:
 	virtual void Initialize(const SceneContext&) {};
 	virtual void PostInitialize(const SceneContext& ) {}
 	virtual void Draw(const SceneContext&) {}
+	virtual void OnImGui(const SceneContext&) {}
 	virtual void PostDraw(const SceneContext&) {}
 	virtual void Update(const SceneContext&) {}
 	virtual void OnParentAttach(GameObject* /*pParent*/) {}

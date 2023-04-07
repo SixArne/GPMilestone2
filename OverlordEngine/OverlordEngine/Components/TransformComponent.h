@@ -19,6 +19,10 @@ public:
 	void Translate(const XMFLOAT3& position);
 	void Translate(const XMVECTOR& position);
 
+	void Move(float x, float y, float);
+	void Move(const XMFLOAT3& position);
+	void Move(const XMVECTOR& position);
+
 	void Rotate(float x, float y, float z, bool degrees = true);
 	void Rotate(const XMFLOAT3& rotation, bool degrees = true);
 	void Rotate(const XMVECTOR& rotation, bool isQuaternion = true);

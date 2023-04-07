@@ -41,42 +41,82 @@ struct GS_DATA
 //****************
 // VERTEX SHADER *
 //****************
-GS_DATA MainVS(VS_DATA vsData)
+VS_DATA MainVS(VS_DATA vsData)
 {
-	//Step 1.
-	//Delete this transformation code and just return the VS_DATA parameter (vsData)
-	//Don't forget to change the return type!
-
-    GS_DATA temp = (GS_DATA) 0;
-    temp.Position = mul(float4(vsData.Position, 1), m_MatrixWorldViewProj);
-    temp.Normal = mul(vsData.Normal, (float3x3) m_MatrixWorld);
-
-    return temp;
+    return vsData;
 }
 
 //******************
 // GEOMETRY SHADER *
 //******************
-void CreateVertex(inout TriangleStream<GS_DATA> triStream, float3 pos, float3 normal, float2 texCoord)
+void CreateVertex(inout TriangleStream<GS_DATA> triStream, float3 pos, float3 normal)
 {
 	//Step 1. Create a GS_DATA object
+    GS_DATA output = (GS_DATA)0;
+
 	//Step 2. Transform the position using the WVP Matrix and assign it to (GS_DATA object).Position (Keep in mind: float3 -> float4)
-	//Step 3. Transform the normal using the World Matrix and assign it to (GS_DATA object).Normal (Only Rotation, No translation!)
-	//Step 4. Append (GS_DATA object) to the TriangleStream parameter (TriangleStream::Append(...))
+	output.Position = mul(float4(pos,1),m_MatrixWorldViewProj);
+    
+    //Step 3. Transform the normal using the World Matrix and assign it to (GS_DATA object).Normal (Only Rotation, No translation!)
+	output.Normal = mul(normal,(float3x3)m_MatrixWorld);
+    
+    //Step 4. Append (GS_DATA object) to the TriangleStream parameter (TriangleStream::Append(...))
+    triStream.Append(output);
 }
 
-[maxvertexcount(6)]
+[maxvertexcount(9)]
 void SpikeGenerator(triangle VS_DATA vertices[3], inout TriangleStream<GS_DATA> triStream)
 {
 	//Use these variable names
     float3 basePoint, top, left, right, spikeNormal;
 
 	//Step 1. Calculate CENTER_POINT
+    const float3 v1 = vertices[0].Position;
+    const float3 v2 = vertices[1].Position;
+    const float3 v3 = vertices[2].Position;
+
+    basePoint = (v1 + v2 + v3) / 3;
+
 	//Step 2. Calculate Face Normal (Original Triangle)
+    const float3 a = v1 - v2;
+    const float3 b = v3 - v2;
+    spikeNormal = normalize(cross(a, b));
+
 	//Step 3. Offset CENTER_POINT (use gSpikeLength)
+    basePoint = basePoint + (spikeNormal * gSpikeLength);
+    
 	//Step 4 + 5. Calculate Individual Face Normals (Cross Product of Face Edges) & Create Vertices for every face
 
         //FACE 1
+    float3 fa = basePoint - v2;
+    float3 fb = v3 - v2;
+    spikeNormal = normalize(cross(fa, fb));
+
+    CreateVertex(triStream, v2, spikeNormal);
+    CreateVertex(triStream, v3, spikeNormal);
+    CreateVertex(triStream, basePoint, spikeNormal);
+
+        //Restart Strip! >> We want to start a new triangle (= interrupt trianglestrip)
+    triStream.RestartStrip();
+
+        //FACE 2
+    fa = basePoint - v3;
+    fb = v1 - v3;
+    spikeNormal = normalize(cross(fa, fb));
+    CreateVertex(triStream, v3, spikeNormal);
+    CreateVertex(triStream, v1, spikeNormal);
+    CreateVertex(triStream, basePoint, spikeNormal);
+
+        //...
+    triStream.RestartStrip();
+
+        //Face 3
+    fa = basePoint - v1;
+    fb = v2 - v1;
+    spikeNormal = normalize(cross(fa, fb));
+    CreateVertex(triStream, v1, spikeNormal);
+    CreateVertex(triStream, v2, spikeNormal);
+    CreateVertex(triStream, basePoint, spikeNormal);
         //faceNormal1 = ...
         //CreateVertex(triStream, ...)
         //CreateVertex(triStream, ...)
@@ -116,7 +156,7 @@ technique11 Default //FXComposer >> Rename to "technique10 Default"
     {
         SetRasterizerState(FrontCulling);
         SetVertexShader(CompileShader(vs_4_0, MainVS()));
-        SetGeometryShader(NULL);
+        SetGeometryShader(CompileShader(gs_4_0, SpikeGenerator()));
         SetPixelShader(CompileShader(ps_4_0, MainPS()));
     }
 }

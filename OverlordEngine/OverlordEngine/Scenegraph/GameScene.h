@@ -9,6 +9,8 @@ class GameObject;
 class GameScene
 {
 public:
+	friend class GameObject;
+
 	GameScene(std::wstring sceneName);
 	GameScene(const GameScene& other) = delete;
 	GameScene(GameScene&& other) noexcept = delete;
@@ -46,11 +48,12 @@ protected:
 	virtual void PostDraw() {};
 	virtual void ShadowDraw() {};
 
-	virtual void OnGUI(){}
+	virtual void OnGUI();
 	virtual void OnSceneActivated() {}
 	virtual void OnSceneDeactivated() {}
 
 	SceneContext m_SceneContext{};
+	std::vector<GameObject*> m_pChildren{};
 private:
 	friend class SceneManager;
 
@@ -63,7 +66,7 @@ private:
 	void RootOnGUI();
 	void RootWindowStateChanged(int state, bool active) const;
 
-	std::vector<GameObject*> m_pChildren{};
+
 	bool m_IsInitialized{};
 	std::wstring m_SceneName{};
 	CameraComponent* m_pDefaultCamera{}, * m_pActiveCamera{};
