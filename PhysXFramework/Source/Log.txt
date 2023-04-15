@@ -1,0 +1,18 @@
+[2023-4-13 - 8:19:17:869][DEBUG]   Adapter 0 : NVIDIA GeForce RTX 3070
+[2023-4-13 - 8:19:17:873][DEBUG]   Adapter 1 : NVIDIA GeForce RTX 3070
+[2023-4-13 - 8:19:17:874][DEBUG]   Adapter 2 : Microsoft Basic Render Driver
+[2023-4-13 - 8:19:17:874][DEBUG]   3 Adapter(s) found
+[2023-4-13 - 8:19:17:875][DEBUG]   InitalizeAdapterAndOutput ok.
+[2023-4-13 - 8:19:17:876][DEBUG]   Window Class Created
+[2023-4-13 - 8:19:17:877][DEBUG]   Desktop resolution: 2560 x 1440
+[2023-4-13 - 8:19:17:915][DEBUG]   Window Opened
+[2023-4-13 - 8:19:18:269][DEBUG]   Direct3D Initialized
+[2023-4-13 - 8:19:18:643][DEBUG]   Managers Initialized!
+[2023-4-13 - 8:19:18:644][INFO]    Press 'Page Up' or 'Page Down' to cycle between the different scenes
+[2023-4-13 - 8:19:18:645][INFO]    Press 'I' to toggle the debug renderer.
+[2023-4-13 - 8:19:18:647][INFO]    Press 'M' to do physics stepping.
+[2023-4-13 - 8:19:18:647][INFO]    Press 'L' to stop doing physics stepping.
+[2023-4-13 - 8:19:18:734][DEBUG]   Parsing mesh: Level.obj
+[2023-4-13 - 8:19:18:736][DEBUG]   Scenes Initialized!
+[2023-4-13 - 8:19:18:867][DEBUG]   DebugRenderer::Draw() > Increasing Vertexbuffer Size!
+[2023-4-13 - 8:19:29:461][DEBUG]   Core Initialization Finished
