@@ -63,8 +63,69 @@ void CameraComponent::SetActive(bool active)
 	pScene->SetActiveCamera(active?this:nullptr); //Switch to default camera if active==false
 }
 
-GameObject* CameraComponent::Pick(CollisionGroup /*ignoreGroups*/) const
+GameObject* CameraComponent::Pick(CollisionGroup ignoreGroups) const
 {
-	TODO_W7(L"Implement Picking Logic")
+	SceneContext sceneContext = m_pScene->GetSceneContext();
+	POINT position = sceneContext.pInput->GetMousePosition();
+
+	D3D11_VIEWPORT viewport{};
+	UINT numViewports{ 1 };
+	sceneContext.d3dContext.pDeviceContext->RSGetViewports(&numViewports, &viewport);
+
+	float halfWidth{ viewport.Width / 2.f };
+	float halfHeight{ viewport.Height / 2.f };
+
+	// from screen to 0-1
+	float x{ (float(position.x) - halfWidth) / halfWidth };
+	float y{ (halfHeight - float(position.y)) / halfHeight };
+
+	DirectX::XMFLOAT4 nearPlane{ x, y, 0.f, 0.f };
+	DirectX::XMFLOAT4 farPlane{ x, y, 1.f, 0.f };
+	DirectX::XMVECTOR nearP{ DirectX::XMLoadFloat4(&nearPlane) };
+	DirectX::XMVECTOR farP{ DirectX::XMLoadFloat4(&farPlane) };
+
+	// View projection inverse
+	DirectX::XMMATRIX vpi{ DirectX::XMLoadFloat4x4(&m_ViewProjectionInverse) };
+
+	DirectX::XMFLOAT4 nPoint{}, fPoint{};
+	DirectX::XMVECTOR nearPoint{ DirectX::XMVector3TransformCoord(nearP, vpi) };
+	DirectX::XMVECTOR farPoint{ DirectX::XMVector3TransformCoord(farP, vpi) };
+	DirectX::XMStoreFloat4(&nPoint, nearPoint);
+	DirectX::XMStoreFloat4(&fPoint, farPoint);
+
+	auto start{ physx::PxVec3{ nPoint.x, nPoint.y, nPoint.z } };
+	auto end{ physx::PxVec3{ fPoint.x, fPoint.y, fPoint.z } };
+
+	physx::PxQueryFilterData filterData{};
+	filterData.data.word0 = ~UINT(ignoreGroups);
+
+	physx::PxRaycastBuffer hit{};
+	auto activeScene = SceneManager::Get()->GetActiveScene();
+	auto raycast = activeScene->GetPhysxProxy()->Raycast(
+		start,
+		(end - start).getNormalized(),
+		(end - start).magnitude(),
+		hit,
+		physx::PxHitFlag::eDEFAULT,
+		filterData);
+
+	if (raycast)
+	{
+		auto const comp = hit.block.actor->userData;
+		if (comp == nullptr)
+		{
+			Logger::LogError(L"component is a nullpointer");
+			return nullptr;
+		}
+		auto gameObject = reinterpret_cast<BaseComponent*>(comp)->GetGameObject();
+		if (gameObject == nullptr)
+		{
+			Logger::LogError(L"GameObject is a nullptr");
+			return nullptr;
+		}
+		return gameObject;
+	}
+
+
 	return nullptr;
 }

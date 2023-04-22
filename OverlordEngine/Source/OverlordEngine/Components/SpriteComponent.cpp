@@ -32,7 +32,8 @@ void SpriteComponent::Draw(const SceneContext& /*sceneContext*/)
 
 	const XMFLOAT2 pos{ pTrans->GetPosition().x , pTrans->GetPosition().y };
 	auto rot = MathHelper::QuaternionToEuler(pTrans->GetRotation()).z;
+	auto scale = pTrans->GetScale();
 
-	SpriteRenderer::Get()->AppendSprite(m_pTexture, pos, m_Color, m_Pivot, { 1.f, 1.f }, rot);
+	SpriteRenderer::Get()->AppendSprite(m_pTexture, pos, m_Color, m_Pivot, { scale.x, scale.y }, rot);
 
 }
