@@ -15,6 +15,7 @@ public:
 	void Move(const XMFLOAT3& displacement, float minDistance = 0);
 
 	void SetCollisionGroup(CollisionGroup groups);
+	PxFilterData GetCollisionGroup() const { return m_CollisionGroups; }
 	void SetCollisionIgnoreGroup(CollisionGroup ignoreGroups);
 
 	XMFLOAT3 GetPosition() const;
