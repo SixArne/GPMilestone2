@@ -9,6 +9,8 @@ Character::Character(const CharacterDesc& characterDesc) :
 
 void Character::Initialize(const SceneContext& /*sceneContext*/)
 {
+
+	m_CharacterDesc.controller.contactOffset = 0.3f;
 	//Controller
 	m_pControllerComponent = AddComponent(new ControllerComponent(m_CharacterDesc.controller));
 
@@ -150,8 +152,9 @@ void Character::Update(const SceneContext& sceneContext)
 			//Set m_TotalVelocity.y equal to CharacterDesc::JumpSpeed
 		//Else (=Character is grounded, no input pressed)
 			//m_TotalVelocity.y is zero
-		if (!m_IsGrounded)
+		if (!m_pControllerComponent->GetCollisionFlags().isSet(PxControllerCollisionFlag::eCOLLISION_DOWN))
 		{
+
 			m_TotalVelocity.y -= m_FallAcceleration * elapsedTime;
 			if (m_TotalVelocity.y < -m_CharacterDesc.maxFallSpeed)
 			{
@@ -164,8 +167,9 @@ void Character::Update(const SceneContext& sceneContext)
 		}
 		else
 		{
-			m_TotalVelocity.y = 0;
+			m_TotalVelocity.y = -0.1f;
 		}
+		Logger::LogDebug(L"Grounded, {}", m_pControllerComponent->GetCollisionFlags().isSet(PxControllerCollisionFlag::eCOLLISION_DOWN));
 
 
 		//************
@@ -179,40 +183,40 @@ void Character::Update(const SceneContext& sceneContext)
 
 		DirectX::XMFLOAT3 displacementFloat3;
 		DirectX::XMStoreFloat3(&displacementFloat3, DirectX::XMLoadFloat3(&m_TotalVelocity)* sceneContext.pGameTime->GetElapsed());
-		m_pControllerComponent->Move(displacementFloat3, epsilon);
+		m_pControllerComponent->Move(displacementFloat3);
 		
-		physx::PxQueryFilterData filterData{};
-		// ignore self
-		filterData.data.word0 = ~UINT(m_pControllerComponent->GetCollisionGroup().word0);
-		
-		physx::PxRaycastBuffer hit{};
+		//physx::PxQueryFilterData filterData{};
+		//// ignore self
+		//filterData.data.word0 = ~UINT(m_pControllerComponent->GetCollisionGroup().word0);
+		//
+		//physx::PxRaycastBuffer hit{};
 
-		auto activeScene = SceneManager::Get()->GetActiveScene();
-		auto startPosition = m_pControllerComponent->GetTransform()->GetWorldPosition();
+		//auto activeScene = SceneManager::Get()->GetActiveScene();
+		//auto startPosition = m_pControllerComponent->GetTransform()->GetWorldPosition();
 
-		PxVec3 start = {startPosition.x, startPosition.y + 5.f, startPosition.z};
-		PxVec3 end = start + PxVec3{ 0, -startPosition.y - 10.f, 0 };
-		auto direction = (end - start).getNormalized();
-		auto distance = (end - start).magnitude();
+		//PxVec3 start = {startPosition.x, startPosition.y + 5.f, startPosition.z};
+		//PxVec3 end = start + PxVec3{ 0, -startPosition.y - 10.f, 0 };
+		//auto direction = (end - start).getNormalized();
+		//auto distance = (end - start).magnitude();
 
 
-		auto raycast = activeScene->GetPhysxProxy()->Raycast(
-			start,
-			direction,
-			distance,
-			hit,
-			physx::PxHitFlag::eDEFAULT,
-			filterData);
+		//auto raycast = activeScene->GetPhysxProxy()->Raycast(
+		//	start,
+		//	direction,
+		//	distance,
+		//	hit,
+		//	physx::PxHitFlag::eDEFAULT,
+		//	filterData);
 
-		if (raycast)
-		{
-			// Setting is grounded to true
-			m_IsGrounded = true;
-		}
-		else
-		{
-			m_IsGrounded = false;
-		}
+		//if (raycast)
+		//{
+		//	// Setting is grounded to true
+		//	m_IsGrounded = true;
+		//}
+		//else
+		//{
+		//	m_IsGrounded = false;
+		//}
 	}
 }
 
