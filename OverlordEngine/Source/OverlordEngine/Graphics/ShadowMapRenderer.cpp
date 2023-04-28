@@ -116,7 +116,7 @@ void ShadowMapRenderer::Begin(const SceneContext& sceneContext)
 	m_pShadowRenderTarget->Clear();
 }
 
-void ShadowMapRenderer::DrawMesh(const SceneContext& /*sceneContext*/, MeshFilter* pMeshFilter, const XMFLOAT4X4& meshWorld, const std::vector<XMFLOAT4X4>& meshBones)
+void ShadowMapRenderer::DrawMesh(const SceneContext& sceneContext, MeshFilter* pMeshFilter, const XMFLOAT4X4& meshWorld, const std::vector<XMFLOAT4X4>& meshBones)
 {
 	TODO_W8(L"Implement DrawMesh");
 	//This function is called for every mesh that needs to be rendered on the shadowmap (= cast shadows)
@@ -152,6 +152,37 @@ void ShadowMapRenderer::DrawMesh(const SceneContext& /*sceneContext*/, MeshFilte
 	//		- Set IndexBuffer
 	//		- Set correct TechniqueContext on ShadowMapMaterial - use ShadowGeneratorType as ID (BaseMaterial::SetTechnique)
 	//		- Perform Draw Call (same as usual, iterate Technique Passes, Apply, Draw - See ModelComponent::Draw for reference)
+	const auto pDeviceContext = sceneContext.d3dContext.pDeviceContext;
+
+
+
+	for (const auto& subMesh : pMeshFilter->GetMeshes())
+	{
+		//Set Inputlayout
+		pDeviceContext->IASetInputLayout(technique.pInputLayout);
+
+
+		//Set Vertex Buffer
+		const UINT offset = 0;
+		const auto& vertexBufferData = pMeshFilter->GetVertexBufferData(technique.inputLayoutID, subMesh.id);
+		pDeviceContext->IASetVertexBuffers(0, 1, &vertexBufferData.pVertexBuffer, &vertexBufferData.VertexStride,
+			&offset);
+
+		//Set Primitive Topology
+		pDeviceContext->IASetPrimitiveTopology(D3D10_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+
+		//Set Index Buffer
+		pDeviceContext->IASetIndexBuffer(subMesh.buffers.pIndexBuffer, DXGI_FORMAT_R32_UINT, 0);
+
+		D3DX11_TECHNIQUE_DESC techDesc{};
+
+		technique.pTechnique->GetDesc(&techDesc);
+		for (UINT p = 0; p < techDesc.Passes; ++p)
+		{
+			technique.pTechnique->GetPassByIndex(p)->Apply(0, pDeviceContext);
+			pDeviceContext->DrawIndexed(subMesh.indexCount, 0, 0);
+		}
+	}
 }
 
 void ShadowMapRenderer::End(const SceneContext&) const

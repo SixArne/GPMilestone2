@@ -15,7 +15,7 @@ void DiffuseMaterial_Shadow::InitializeEffectVariables()
 {
 }
 
-void DiffuseMaterial_Shadow::OnUpdateModelVariables(const SceneContext& /*sceneContext*/, const ModelComponent* /*pModel*/) const
+void DiffuseMaterial_Shadow::OnUpdateModelVariables(const SceneContext& sceneContext, const ModelComponent* pModel) const
 {
 	/*
 	 * TODO_W8
@@ -30,6 +30,15 @@ void DiffuseMaterial_Shadow::OnUpdateModelVariables(const SceneContext& /*sceneC
 	*/
 
 	//Update Shadow Variables
-	//const auto pShadowMapRenderer = ShadowMapRenderer::Get();
+	const auto pShadowMapRenderer = ShadowMapRenderer::Get();
 	//...
+	auto lightWVP = DirectX::XMMatrixMultiply(XMLoadFloat4x4(&pModel->GetTransform()->GetWorld()), XMLoadFloat4x4(&pShadowMapRenderer->GetLightVP()));
+
+	SetVariable_Matrix(L"gWorldViewProj_Light", reinterpret_cast<const float*>(lightWVP.r));
+
+	//2. Update the ShadowMap texture
+	SetVariable_Texture(L"gShadowMap", ShadowMapRenderer::Get()->GetShadowMap());
+
+	//3. Update the Light Direction (retrieve the direction from the LightManager > sceneContext)
+	SetVariable_Vector(L"gLightDirection", sceneContext.pLights->GetDirectionalLight().direction);
 }
