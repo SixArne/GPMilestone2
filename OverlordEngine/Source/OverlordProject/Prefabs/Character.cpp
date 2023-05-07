@@ -1,10 +1,11 @@
 #include "stdafx.h"
 #include "Character.h"
 
-Character::Character(const CharacterDesc& characterDesc) :
+Character::Character(const CharacterDesc& characterDesc, GameObject* visuals) :
 	m_CharacterDesc{ characterDesc },
 	m_MoveAcceleration(characterDesc.maxMoveSpeed / characterDesc.moveAccelerationTime),
-	m_FallAcceleration(characterDesc.maxFallSpeed / characterDesc.fallAccelerationTime)
+	m_FallAcceleration(characterDesc.maxFallSpeed / characterDesc.fallAccelerationTime),
+	m_pVisuals{ AddChild(visuals) }
 {}
 
 void Character::Initialize(const SceneContext& /*sceneContext*/)
@@ -15,11 +16,13 @@ void Character::Initialize(const SceneContext& /*sceneContext*/)
 	m_pControllerComponent = AddComponent(new ControllerComponent(m_CharacterDesc.controller));
 
 	//Camera
-	const auto pCamera = AddChild(new FixedCamera());
+	m_pCameraBoom = AddChild(new GameObject());
+	const auto pCamera = m_pCameraBoom->AddChild(new FixedCamera());
+
 	m_pCameraComponent = pCamera->GetComponent<CameraComponent>();
 	m_pCameraComponent->SetActive(true);
 
-	pCamera->GetTransform()->Translate(0.f, m_CharacterDesc.controller.height * .5f, 0.f);
+	pCamera->GetTransform()->Translate(0.f, m_CharacterDesc.controller.height, -20.f);
 }
 
 void Character::Update(const SceneContext& sceneContext)
@@ -27,6 +30,8 @@ void Character::Update(const SceneContext& sceneContext)
 
 	if (m_pCameraComponent->IsActive())
 	{
+		bool isGrounded = m_pControllerComponent->GetCollisionFlags().isSet(PxControllerCollisionFlag::eCOLLISION_DOWN);
+
 		constexpr float epsilon{ 0.01f }; //Constant that can be used to compare if a float is near zero
 
 		//***************
@@ -101,8 +106,9 @@ void Character::Update(const SceneContext& sceneContext)
 		m_TotalYaw += look.x * m_CharacterDesc.rotationSpeed * elapsedTime;
 		m_TotalPitch -= look.y * m_CharacterDesc.rotationSpeed * elapsedTime;
 
-		GetTransform()->Rotate(m_TotalPitch, m_TotalYaw, 0);
-		//m_pVisuals->GetTransform()->Rotate(-m_TotalPitch, 0, 0);
+		m_pCameraBoom->GetTransform()->Rotate(m_TotalPitch, m_TotalYaw, 0);
+
+		
 
 		//********
 		//MOVEMENT
@@ -127,6 +133,24 @@ void Character::Update(const SceneContext& sceneContext)
 			{
 				m_MoveSpeed = m_CharacterDesc.maxMoveSpeed;
 			}
+
+			if (!(m_State & StateBitfield::Moving))
+			{
+				m_State |= StateBitfield::Moving;
+				m_State |= StateBitfield::HasStartedMoving;
+				m_State &= ~StateBitfield::Idle;
+			}
+			else
+			{
+				m_State &= ~StateBitfield::HasStartedMoving;
+			}
+
+			// Rotate the visuals only when moving
+			if (m_pVisuals != nullptr)
+			{
+				auto directionInDegrees = XMConvertToDegrees(atan2(m_CurrentDirection.x, m_CurrentDirection.z));
+				m_pVisuals->GetTransform()->Rotate(0, directionInDegrees + 180.f, 0);
+			}
 		}
 		else
 		{
@@ -134,6 +158,19 @@ void Character::Update(const SceneContext& sceneContext)
 			if (m_MoveSpeed < epsilon)
 			{
 				m_MoveSpeed = 0;
+
+				
+			}
+
+			if (!(m_State & StateBitfield::Idle))
+			{
+				m_State |= StateBitfield::Idle;
+				m_State |= StateBitfield::HasStartedIdle;
+				m_State &= ~StateBitfield::Moving;
+			}
+			else
+			{
+				m_State &= ~StateBitfield::HasStartedIdle;
 			}
 		}
 
@@ -152,24 +189,54 @@ void Character::Update(const SceneContext& sceneContext)
 			//Set m_TotalVelocity.y equal to CharacterDesc::JumpSpeed
 		//Else (=Character is grounded, no input pressed)
 			//m_TotalVelocity.y is zero
-		if (!m_pControllerComponent->GetCollisionFlags().isSet(PxControllerCollisionFlag::eCOLLISION_DOWN))
+		if (!isGrounded)
 		{
-
 			m_TotalVelocity.y -= m_FallAcceleration * elapsedTime;
 			if (m_TotalVelocity.y < -m_CharacterDesc.maxFallSpeed)
 			{
 				m_TotalVelocity.y = -m_CharacterDesc.maxFallSpeed;
 			}
+
+			// When he is off the ground set his hasStarted jump flag to false
+			// and make him not grounded anymore.
+			m_State &= ~StateBitfield::HasStartedJump;
+			m_State &= ~StateBitfield::IsGrounded;
 		}
 		else if (sceneContext.pInput->IsActionTriggered(m_CharacterDesc.actionId_Jump))
 		{
 			m_TotalVelocity.y = m_CharacterDesc.JumpSpeed;
+
+			// If Mario hasn't jumped yet
+			if (!(m_State & StateBitfield::HasStartedJump))
+			{
+				// Set the jump flag to true and make him not grounded anymore.
+				m_State |= StateBitfield::HasStartedJump;
+				m_State &= ~StateBitfield::IsGrounded;
+			}
 		}
 		else
 		{
-			m_TotalVelocity.y = -100.1f;
+			if (!(m_State & StateBitfield::IsGrounded))
+			{
+				if (m_State & StateBitfield::Moving)
+				{
+					m_State |= StateBitfield::HasStartedMoving;
+				}
+				else if (m_State & StateBitfield::Idle)
+				{
+					m_State |= StateBitfield::HasStartedIdle;
+				}
+
+
+				m_State |= StateBitfield::IsGrounded;
+				m_State &= ~StateBitfield::HasStartedJump;
+			}
+			// Make him not grounded anymore.
+			
+
+			m_TotalVelocity.y = -50.1f;
 		}
-		Logger::LogDebug(L"Grounded, {}", m_pControllerComponent->GetCollisionFlags().isSet(PxControllerCollisionFlag::eCOLLISION_DOWN));
+		//Logger::LogDebug(L"Grounded, {}", isGrounded);
 
 
 		//************
@@ -258,4 +325,9 @@ void Character::DrawImGui()
 			m_pCameraComponent->SetActive(isActive);
 		}
 	}
+}
+
+uint32_t Character::GetState()
+{
+	return m_State;
 }

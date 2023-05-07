@@ -1,5 +1,6 @@
 #pragma once
 class Character;
+class Mario;
 
 class CapKingdom :
     public GameScene
@@ -33,14 +34,5 @@ private:
 	void CreateBridge();
 	void CreatePlayer();
 
-	enum InputIds
-	{
-		CharacterMoveLeft,
-		CharacterMoveRight,
-		CharacterMoveForward,
-		CharacterMoveBackward,
-		CharacterJump
-	};
-
-	Character* m_pCharacter{};
+	Mario* m_pMario{};
 };

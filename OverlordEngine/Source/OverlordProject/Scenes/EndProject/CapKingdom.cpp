@@ -4,7 +4,7 @@
 #include "Materials/ColorMaterial.h"
 #include "Materials/UberMaterial.h"
 #include "Utils/ClipboardUtil.h"
-#include "Prefabs/Character.h"
+#include "Prefabs/Mario.h"
 #include <array>
 
 void CapKingdom::Initialize()
@@ -71,7 +71,7 @@ void CapKingdom::OnGUI()
 	GameScene::OnGUI();
 	
 	m_DebugMaterial->DrawImGui();
-	m_pCharacter->DrawImGui();
+	m_pMario->DrawImGui();
 }
 
 void CapKingdom::CreateMap()
@@ -278,32 +278,7 @@ void CapKingdom::CreateBridge()
 
 void CapKingdom::CreatePlayer()
 {
-	const auto pDefaultMaterial = PxGetPhysics().createMaterial(0.5f, 0.5f, 0.5f);
-
-	//Character
-	CharacterDesc characterDesc{ pDefaultMaterial, 1.f, 5.f };
-	characterDesc.actionId_MoveForward = CharacterMoveForward;
-	characterDesc.actionId_MoveBackward = CharacterMoveBackward;
-	characterDesc.actionId_MoveLeft = CharacterMoveLeft;
-	characterDesc.actionId_MoveRight = CharacterMoveRight;
-	characterDesc.actionId_Jump = CharacterJump;
-
-	m_pCharacter = AddChild(new Character(characterDesc));
-	m_pCharacter->GetTransform()->Translate(0.f, 20.f, 0.f);
-
-	//Input
-	auto inputAction = InputAction(CharacterMoveLeft, InputState::down, 'A');
-	m_SceneContext.pInput->AddInputAction(inputAction);
-
-	inputAction = InputAction(CharacterMoveRight, InputState::down, 'D');
-	m_SceneContext.pInput->AddInputAction(inputAction);
-
-	inputAction = InputAction(CharacterMoveForward, InputState::down, 'W');
-	m_SceneContext.pInput->AddInputAction(inputAction);
-
-	inputAction = InputAction(CharacterMoveBackward, InputState::down, 'S');
-	m_SceneContext.pInput->AddInputAction(inputAction);
-
-	inputAction = InputAction(CharacterJump, InputState::pressed, VK_SPACE, -1, XINPUT_GAMEPAD_A);
-	m_SceneContext.pInput->AddInputAction(inputAction);
+	m_pMario = new Mario();
+		
+	AddChild(m_pMario);
 }

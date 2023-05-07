@@ -21,7 +21,7 @@ void CharacterScene::Initialize()
 	characterDesc.actionId_MoveRight = CharacterMoveRight;
 	characterDesc.actionId_Jump = CharacterJump;
 
-	m_pCharacter = AddChild(new Character(characterDesc));
+	m_pCharacter = AddChild(new Character(characterDesc, nullptr));
 	m_pCharacter->GetTransform()->Translate(0.f, 5.f, 0.f);
 
 	//Simple Level

@@ -1,4 +1,6 @@
 #pragma once
+#define BIT(x) (1 << x)
+
 struct CharacterDesc
 {
 	CharacterDesc(
@@ -15,7 +17,7 @@ struct CharacterDesc
 	float maxMoveSpeed{ 25.f };
 	float maxFallSpeed{ 30.f };
 
-	float JumpSpeed{ 25.f };
+	float JumpSpeed{ 35.f };
 
 	float moveAccelerationTime{ .3f };
 	float fallAccelerationTime{ .3f };
@@ -31,10 +33,21 @@ struct CharacterDesc
 	int actionId_Jump{ -1 };
 };
 
+enum StateBitfield
+{
+	HasStartedIdle		= BIT(0),
+	Idle				= BIT(1),
+	HasStartedMoving	= BIT(2),
+	Moving				= BIT(3),
+	HasStartedJump		= BIT(4),
+	Jumping				= BIT(5),
+	IsGrounded			= BIT(6)
+};
+
 class Character : public GameObject
 {
 public:
-	Character(const CharacterDesc& characterDesc);
+	Character(const CharacterDesc& characterDesc, GameObject* visuals);
 	~Character() override = default;
 
 	Character(const Character& other) = delete;
@@ -43,6 +56,7 @@ public:
 	Character& operator=(Character&& other) noexcept = delete;
 
 	void DrawImGui();
+	uint32_t GetState();
 
 protected:
 	void Initialize(const SceneContext&) override;
@@ -51,6 +65,9 @@ protected:
 private:
 	CameraComponent* m_pCameraComponent{};
 	ControllerComponent* m_pControllerComponent{};
+	GameObject* m_pVisuals{};
+	GameObject* m_pCameraBoom{};
+	
 
 	CharacterDesc m_CharacterDesc;
 	float m_TotalPitch{}, m_TotalYaw{};				//Total camera Pitch(X) and Yaw(Y) rotation
@@ -62,5 +79,7 @@ private:
 	XMFLOAT3 m_CurrentDirection{};					//Current/Last Direction based on Camera forward/right (Stored for deacceleration)
 
 	bool m_IsGrounded{ false };
+	
+	uint32_t m_State{};
 };
 
