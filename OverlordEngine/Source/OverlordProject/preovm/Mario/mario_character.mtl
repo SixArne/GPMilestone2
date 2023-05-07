@@ -1,0 +1,103 @@
+# Blender 3.5.0 MTL File: 'mario_character.blend'
+# www.blender.org
+
+newmtl MarioBodyMat00
+Ns 20.000006
+Ka 1.000000 1.000000 1.000000
+Ks 0.000000 0.000000 0.000000
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+illum 1
+map_Kd Mario/Textures/MarioBodyFix_alb.png
+map_d Mario/Textures/MarioBodyFix_alb.png
+
+newmtl MarioBodyMat01
+Ns 20.000006
+Ka 1.000000 1.000000 1.000000
+Ks 0.000000 0.000000 0.000000
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+illum 1
+map_Kd Mario/Textures/MarioBodyFix_alb.png
+map_d Mario/Textures/MarioBodyFix_alb.png
+map_Bump -bm 0.300000 Mario/Textures/MarioBodyFixRed_nrm.png
+
+newmtl MarioEyeMat00
+Ns 20.000006
+Ka 1.000000 1.000000 1.000000
+Ks 0.000000 0.000000 0.000000
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+illum 1
+map_Kd Mario/Textures/MarioEye_alb.png
+map_d Mario/Textures/MarioEye_alb.png
+
+newmtl MarioFaceMat00
+Ns 20.000006
+Ka 1.000000 1.000000 1.000000
+Ks 0.000000 0.000000 0.000000
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+illum 1
+map_Kd Mario/Textures/MarioBodyFix_alb.png
+map_d Mario/Textures/MarioBodyFix_alb.png
+
+newmtl MarioFaceMat00.003
+Ns 20.000006
+Ka 1.000000 1.000000 1.000000
+Ks 0.000000 0.000000 0.000000
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+illum 1
+map_Kd Mario/Textures/MarioFace_alb.png
+map_d Mario/Textures/MarioFace_alb.png
+
+newmtl MarioHandMat00
+Ns 20.000006
+Ka 1.000000 1.000000 1.000000
+Ks 0.000000 0.000000 0.000000
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+illum 1
+map_Kd Mario/Textures/MarioHandNew_alb.png
+map_d Mario/Textures/MarioHandNew_alb.png
+
+newmtl MarioHandMat00.001
+Ns 20.000006
+Ka 1.000000 1.000000 1.000000
+Ks 0.000000 0.000000 0.000000
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+illum 1
+map_Kd Mario/Textures/MarioHandNew_alb.png
+map_d Mario/Textures/MarioHandNew_alb.png
+
+newmtl MarioHigeMat00
+Ns 20.000006
+Ka 1.000000 1.000000 1.000000
+Ks 0.000000 0.000000 0.000000
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+illum 1
+map_Kd Mario/Textures/MarioFace_alb.png
+map_d Mario/Textures/MarioFace_alb.png
+
+newmtl MarioMetalMat00
+Ns 20.000006
+Ka 1.000000 1.000000 1.000000
+Ks 0.000000 0.000000 0.000000
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+illum 1
+map_Kd Mario/Textures/MarioBodyFix_alb.png
+map_d Mario/Textures/MarioBodyFix_alb.png
+
+newmtl MarioShoesMat00
+Ns 20.000006
+Ka 1.000000 1.000000 1.000000
+Ks 0.000000 0.000000 0.000000
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+illum 1
+map_Kd Mario/Textures/MarioShoes_alb.png
+map_d Mario/Textures/MarioShoes_alb.png

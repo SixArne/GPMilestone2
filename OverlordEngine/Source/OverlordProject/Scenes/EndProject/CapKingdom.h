@@ -1,4 +1,6 @@
 #pragma once
+class Character;
+
 class CapKingdom :
     public GameScene
 {
@@ -29,4 +31,16 @@ private:
 	void CreateFirstIsland();
 	void CreateSecondIsland();
 	void CreateBridge();
+	void CreatePlayer();
+
+	enum InputIds
+	{
+		CharacterMoveLeft,
+		CharacterMoveRight,
+		CharacterMoveForward,
+		CharacterMoveBackward,
+		CharacterJump
+	};
+
+	Character* m_pCharacter{};
 };

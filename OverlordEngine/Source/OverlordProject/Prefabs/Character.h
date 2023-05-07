@@ -12,17 +12,17 @@ struct CharacterDesc
 		controller.material = pMaterial;
 	}
 
-	float maxMoveSpeed{ 15.f };
-	float maxFallSpeed{ 15.f };
+	float maxMoveSpeed{ 25.f };
+	float maxFallSpeed{ 30.f };
 
-	float JumpSpeed{ 15.f };
+	float JumpSpeed{ 25.f };
 
 	float moveAccelerationTime{ .3f };
 	float fallAccelerationTime{ .3f };
 
 	PxCapsuleControllerDesc controller{};
 
-	float rotationSpeed{ 60.f };
+	float rotationSpeed{ 110.f };
 
 	int actionId_MoveLeft{ -1 };
 	int actionId_MoveRight{ -1 };

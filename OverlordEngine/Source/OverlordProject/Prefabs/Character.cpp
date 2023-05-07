@@ -10,7 +10,7 @@ Character::Character(const CharacterDesc& characterDesc) :
 void Character::Initialize(const SceneContext& /*sceneContext*/)
 {
 
-	m_CharacterDesc.controller.contactOffset = 0.3f;
+	m_CharacterDesc.controller.contactOffset = 0.1f;
 	//Controller
 	m_pControllerComponent = AddComponent(new ControllerComponent(m_CharacterDesc.controller));
 
@@ -167,7 +167,7 @@ void Character::Update(const SceneContext& sceneContext)
 		}
 		else
 		{
-			m_TotalVelocity.y = -0.1f;
+			m_TotalVelocity.y = -100.1f;
 		}
 		Logger::LogDebug(L"Grounded, {}", m_pControllerComponent->GetCollisionFlags().isSet(PxControllerCollisionFlag::eCOLLISION_DOWN));
 

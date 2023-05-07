@@ -101,7 +101,6 @@
     <ClCompile Include="Materials\DiffuseMaterial_Skinned.cpp" />
     <ClCompile Include="Scenes\Week 6\HardwareSkinningScene.cpp" />
     <ClCompile Include="Prefabs\BoneObject.cpp" />
-    <ClCompile Include="Prefabs\Player.cpp" />
     <ClCompile Include="Scenes\EndProject\CapKingdom.cpp" />
     <ClCompile Include="Materials\DiffuseMaterial.cpp" />
     <ClCompile Include="Scenes\Week 4\ModelTestScene.cpp" />
@@ -149,7 +148,6 @@
     <ClInclude Include="Materials\DiffuseMaterial_Skinned.h" />
     <ClInclude Include="Scenes\Week 6\HardwareSkinningScene.h" />
     <ClInclude Include="Prefabs\BoneObject.h" />
-    <ClInclude Include="Prefabs\Player.h" />
     <ClInclude Include="Scenes\EndProject\CapKingdom.h" />
     <ClInclude Include="Materials\DiffuseMaterial.h" />
     <ClInclude Include="Scenes\Week 4\ModelTestScene.h" />
