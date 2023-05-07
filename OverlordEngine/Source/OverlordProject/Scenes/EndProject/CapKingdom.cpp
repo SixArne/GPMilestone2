@@ -5,7 +5,10 @@
 #include "Materials/UberMaterial.h"
 #include "Utils/ClipboardUtil.h"
 #include "Prefabs/Mario.h"
+#include "Prefabs/Character.h"
 #include <array>
+
+#include "Materials/Shadow/DiffuseMaterial_Shadow.h"
 
 void CapKingdom::Initialize()
 {
@@ -16,6 +19,8 @@ void CapKingdom::Initialize()
 	CreateWalls();*/
 	CreateMap();
 	CreatePlayer();
+
+	m_SceneContext.pLights->SetDirectionalLight({ -95.6139526f,66.1346436f,-41.1850471f }, { 0.740129888f, -0.597205281f, 0.309117377f });
 
 	FMOD::Sound* pSound = nullptr;
 	if (!pSound)
@@ -28,36 +33,13 @@ void CapKingdom::Initialize()
 
 	SoundManager::Get()->GetSystem()->playSound(pSound, nullptr, false, &m_pBackgroundMusic);
 	m_pBackgroundMusic->setVolume(0.1f);
+
+	m_SceneContext.pInput->AddInputAction(InputAction(0, InputState::pressed, VK_DELETE));
 }
 
 void CapKingdom::Update()
 {
-	// camera
-	/*auto camPos = m_pCamera->GetTransform()->GetPosition();
 
-	auto camNewPos = XMFLOAT3
-	{
-		camPos.x,
-		camPos.y,
-		camPos.z + (1 * m_SceneContext.pGameTime->GetElapsed())
-	};
-
-
-
-	m_pCamera->GetTransform()->Translate(camNewPos);*/
-
-	// luneth
-
-	//auto lunethPos = m_pLuneth->GetTransform()->GetPosition();
-
-	////auto lunethNewPos = XMFLOAT3
-	////{
-	////	lunethPos.x,
-	////	lunethPos.y,
-	////	lunethPos.z + (1 * m_SceneContext.pGameTime->GetElapsed())
-	////};
-
-	//m_pLuneth->GetTransform()->Translate(lunethNewPos);
 }
 
 void CapKingdom::Draw()
@@ -66,12 +48,26 @@ void CapKingdom::Draw()
 
 }
 
+void CapKingdom::PostDraw()
+{
+	if (m_DrawShadowMap)
+	{
+		ShadowMapRenderer::Get()->Debug_DrawDepthSRV({ m_SceneContext.windowWidth - 10.f, 10.f }, { m_ShadowMapScale, m_ShadowMapScale }, { 1.f,0.f });
+	}
+}
+
 void CapKingdom::OnGUI()
 {
 	GameScene::OnGUI();
 	
 	m_DebugMaterial->DrawImGui();
 	m_pMario->DrawImGui();
+
+	ImGui::DragFloat3("direction", &m_LightDirection.x, 0.1f, -1.f, 1.f);
+	m_SceneContext.pLights->SetDirectionalLight(m_pMario->GetTransform()->GetWorldPosition(), m_LightDirection);
+
+	ImGui::Checkbox("Draw ShadowMap", &m_DrawShadowMap);
+	ImGui::SliderFloat("ShadowMap Scale", &m_ShadowMapScale, 0.f, 1.f);
 }
 
 void CapKingdom::CreateMap()
@@ -106,7 +102,7 @@ void CapKingdom::CreateFirstIsland()
 
 	m_DebugMaterial = pBrickWallMaterial;
 
-	UberMaterial* pStripes = MaterialManager::Get()->CreateMaterial<UberMaterial>();
+	DiffuseMaterial_Shadow* pStripes = MaterialManager::Get()->CreateMaterial<DiffuseMaterial_Shadow>();
 	pStripes->SetDiffuseTexture(L"Meshes/StripeCamouflageSingleLayer00.004_diffuse.png");
 
 	UberMaterial* pMetalFenceMaterial = MaterialManager::Get()->CreateMaterial<UberMaterial>();
@@ -123,7 +119,7 @@ void CapKingdom::CreateFirstIsland()
 	pHatMetalMaterial->SetDiffuseTexture(L"Meshes/HatMetal03.003_diffuse.png");
 	pHatMetalMaterial->SetNormalTexture(L"Meshes/HatMetal03.003_normal.png");
 
-	UberMaterial* pDazzleMaterial = MaterialManager::Get()->CreateMaterial<UberMaterial>();
+	DiffuseMaterial_Shadow* pDazzleMaterial = MaterialManager::Get()->CreateMaterial<DiffuseMaterial_Shadow>();
 	pDazzleMaterial->SetDiffuseTexture(L"Meshes/DazzleCamouflageSingleLayer.004_diffuse.png");
 
 	// Load model
@@ -278,7 +274,39 @@ void CapKingdom::CreateBridge()
 
 void CapKingdom::CreatePlayer()
 {
-	m_pMario = new Mario();
-		
-	AddChild(m_pMario);
+
+
+	const auto pDefaultMaterial = PxGetPhysics().createMaterial(0.5f, 0.5f, 0.5f);
+
+	//Character
+	CharacterDesc characterDesc{ pDefaultMaterial };
+	characterDesc.actionId_MoveForward = CharacterMoveForward;
+	characterDesc.actionId_MoveBackward = CharacterMoveBackward;
+	characterDesc.actionId_MoveLeft = CharacterMoveLeft;
+	characterDesc.actionId_MoveRight = CharacterMoveRight;
+	characterDesc.actionId_Jump = CharacterJump;
+	characterDesc.controller.height = 5.f;
+	characterDesc.controller.radius = 2.f;
+	characterDesc.JumpSpeed = 80.f;
+
+	m_pMario = AddChild(new Character(characterDesc, new Mario()));
+
+	//Input
+	auto inputAction = InputAction(CharacterMoveLeft, InputState::down, 'A');
+	m_SceneContext.pInput->AddInputAction(inputAction);
+
+	inputAction = InputAction(CharacterMoveRight, InputState::down, 'D');
+	m_SceneContext.pInput->AddInputAction(inputAction);
+
+	inputAction = InputAction(CharacterMoveForward, InputState::down, 'W');
+	m_SceneContext.pInput->AddInputAction(inputAction);
+
+	inputAction = InputAction(CharacterMoveBackward, InputState::down, 'S');
+	m_SceneContext.pInput->AddInputAction(inputAction);
+
+	inputAction = InputAction(CharacterJump, InputState::pressed, VK_SPACE, -1, XINPUT_GAMEPAD_A);
+	m_SceneContext.pInput->AddInputAction(inputAction);
+
+	m_pMario->GetTransform()->Scale(1.5, 1.5, 1.5);
+	//m_pMario->GetTransform()->Scale(5, 5, 5);
 }

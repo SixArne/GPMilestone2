@@ -7,11 +7,25 @@ float gShadowMapBias = 0.01f;
 Texture2D gDiffuseMap;
 Texture2D gShadowMap;
 
+SamplerComparisonState cmpSampler
+{
+	// sampler state
+	Filter = COMPARISON_MIN_MAG_MIP_LINEAR;
+	AddressU = MIRROR;
+	AddressV = MIRROR;
+
+	// sampler comparison state
+	ComparisonFunc = LESS_EQUAL;
+};
+
 SamplerState samLinear
 {
     Filter = MIN_MAG_MIP_LINEAR;
     AddressU = Wrap;// or Mirror or Clamp or Border
     AddressV = Wrap;// or Mirror or Clamp or Border
+
+	// sampler comparison state
+	ComparisonFunc = LESS_EQUAL;
 };
 
 SamplerState samPoint
@@ -62,20 +76,52 @@ VS_OUTPUT VS(VS_INPUT input)
 	
 	//TODO: complete Vertex Shader
 	//Hint: Don't forget to project our position to light clip space and store it in lPos
-	
+	output.pos = mul(float4(input.pos, 1.f), gWorldViewProj);
+    output.normal = input.normal;
+    output.texCoord = input.texCoord;
+    output.lPos = mul(float4(input.pos, 1.f),  gWorldViewProj_Light);
+
 	return output;
 }
 
 float2 texOffset(int u, int v)
 {
 	//TODO: return offseted value (our shadow map has the following dimensions: 1280 * 720)
-	return float2(u,v);
+	return float2(float(u) / 1280.f, float(v) / 720.f);
 }
 
 float EvaluateShadowMap(float4 lpos)
 {
 	//TODO: complete
-	return 1.0f;
+	//re-homogenize position after interpolation
+    lpos.xyz /= lpos.w;
+	
+	//if position is not visible to the light - dont illuminate it
+    //results in hard light frustum
+    if (lpos.x < -1.0f || lpos.x > 1.0f ||
+        lpos.y < -1.0f || lpos.y > 1.0f ||
+        lpos.z <  0.0f || lpos.z > 1.0f)
+        return 1.f;
+	
+	//transform clip space coords to texture space coords (-1:1 to 0:1)
+    lpos.x = lpos.x / 2 + 0.5;
+    lpos.y = lpos.y / -2 + 0.5;
+	
+	//apply shadow map bias
+    lpos.z -= gShadowMapBias;
+	
+	
+	    //if clip space z value greater than shadow map value then pixel is in shadow
+	float sum = 0;
+	for (float y = -1.5f; y <= 1.5f; y += 1.f)
+	{
+		for (float x = -1.5f; x <= 1.5f; x += 1.f)
+		{
+			sum += gShadowMap.SampleCmpLevelZero(cmpSampler, lpos.xy + texOffset(x, y), lpos.z);
+		}
+	}
+
+	return (sum / 16.0f) * 0.5 + 0.5;
 }
 
 //--------------------------------------------------------------------------------------

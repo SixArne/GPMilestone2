@@ -104,7 +104,6 @@ void TransformComponent::Translate(float x, float y, float z)
 {
 	//if (!CheckConstraints())
 		//return;
-
 	m_IsTransformChanged |= TransformChanged::TRANSLATION;
 	m_Position.x = x;
 	m_Position.y = y;
@@ -115,6 +114,13 @@ void TransformComponent::Translate(const XMFLOAT3& position)
 {
 	Translate(position.x, position.y, position.z);
 }
+
+//void TransformComponent::SetWorldPosition(const XMFLOAT3& position)
+//{
+//	m_Position.x = position.x;
+//	m_Position.y = position.y;
+//	m_Position.z = position.z;
+//}
 
 void TransformComponent::Translate(const XMVECTOR& position)
 {

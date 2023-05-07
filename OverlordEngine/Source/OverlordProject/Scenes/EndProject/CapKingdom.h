@@ -19,6 +19,7 @@ protected:
 	void Update() override;
 	void Draw() override;
 	void OnGUI() override;
+	void PostDraw() override;
 
 private:
 	GameObject* m_pModelGameObject{};
@@ -34,5 +35,19 @@ private:
 	void CreateBridge();
 	void CreatePlayer();
 
-	Mario* m_pMario{};
+	Character* m_pMario{};
+
+	enum InputIds
+	{
+		CharacterMoveLeft,
+		CharacterMoveRight,
+		CharacterMoveForward,
+		CharacterMoveBackward,
+		CharacterJump
+	};
+
+
+	bool m_DrawShadowMap{ false };
+	float m_ShadowMapScale{ 0.3f };
+	XMFLOAT3 m_LightDirection{ -0.577f, -0.577f, 0.577f };
 };

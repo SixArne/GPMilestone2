@@ -1,87 +1,68 @@
 #include "stdafx.h"
 #include "Mario.h"
 #include "Materials/DiffuseMaterial_Skinned.h"
+#include "Materials/Shadow/DiffuseMaterial_Shadow_Skinned.h"
 #include "Prefabs/Character.h"
 
 
-void Mario::Initialize(const SceneContext& sceneContext)
+void Mario::Initialize(const SceneContext&)
 {
 	
 
 	//////////////////////////////////////////////////////////////////////////
 	//							Character Controller.
 	//////////////////////////////////////////////////////////////////////////
-	auto marioObject = new GameObject();
-	auto marioMesh = marioObject->AddComponent(new ModelComponent(L"Meshes/mario.ovm"));
+	auto marioObject = AddChild(new GameObject());
+	m_pMarioModel = marioObject->AddComponent(new ModelComponent(L"Meshes/mario.ovm"));
 
-	const auto pDefaultMaterial = PxGetPhysics().createMaterial(0.5f, 0.5f, 0.5f);
+	marioObject->GetTransform()->Translate(0.f, -2.5f, 0.f);
 
-	//Character
-	CharacterDesc characterDesc{ pDefaultMaterial, 1.f, 5.f };
-	characterDesc.actionId_MoveForward = CharacterMoveForward;
-	characterDesc.actionId_MoveBackward = CharacterMoveBackward;
-	characterDesc.actionId_MoveLeft = CharacterMoveLeft;
-	characterDesc.actionId_MoveRight = CharacterMoveRight;
-	characterDesc.actionId_Jump = CharacterJump;
-
-	m_pCharacter = AddChild(new Character(characterDesc, marioObject));
-	m_pCharacter->GetTransform()->Translate(0.f, 20.f, 0.f);
-
-	//Input
-	auto inputAction = InputAction(CharacterMoveLeft, InputState::down, 'A');
-	sceneContext.pInput->AddInputAction(inputAction);
-
-	inputAction = InputAction(CharacterMoveRight, InputState::down, 'D');
-	sceneContext.pInput->AddInputAction(inputAction);
-
-	inputAction = InputAction(CharacterMoveForward, InputState::down, 'W');
-	sceneContext.pInput->AddInputAction(inputAction);
-
-	inputAction = InputAction(CharacterMoveBackward, InputState::down, 'S');
-	sceneContext.pInput->AddInputAction(inputAction);
-
-	inputAction = InputAction(CharacterJump, InputState::pressed, VK_SPACE, -1, XINPUT_GAMEPAD_A);
-	sceneContext.pInput->AddInputAction(inputAction);
+	//const auto pDefaultMaterial = PxGetPhysics().createMaterial(0.5f, 0.5f, 0.5f);
 
 	//////////////////////////////////////////////////////////////////////////
 	//							Mario model and textures.
 	//////////////////////////////////////////////////////////////////////////
 
-	const auto pBodyMaterial = MaterialManager::Get()->CreateMaterial<DiffuseMaterial_Skinned>();
+	const auto pBodyMaterial = MaterialManager::Get()->CreateMaterial<DiffuseMaterial_Shadow_Skinned>();
 	pBodyMaterial->SetDiffuseTexture(L"Textures/mariobodyfix_alb.png");
 
-	const auto pFaceMaterial = MaterialManager::Get()->CreateMaterial<DiffuseMaterial_Skinned>();
+	const auto pFaceMaterial = MaterialManager::Get()->CreateMaterial<DiffuseMaterial_Shadow_Skinned>();
 	pFaceMaterial->SetDiffuseTexture(L"Textures/marioface_alb.png");
 
-	const auto pHandsMaterial = MaterialManager::Get()->CreateMaterial<DiffuseMaterial_Skinned>();
+	const auto pHandsMaterial = MaterialManager::Get()->CreateMaterial<DiffuseMaterial_Shadow_Skinned>();
 	pHandsMaterial->SetDiffuseTexture(L"Textures/mariohandnew_alb.png");
 
-	const auto pShoeMaterial = MaterialManager::Get()->CreateMaterial<DiffuseMaterial_Skinned>();
+	const auto pShoeMaterial = MaterialManager::Get()->CreateMaterial<DiffuseMaterial_Shadow_Skinned>();
 	pShoeMaterial->SetDiffuseTexture(L"Textures/marioshoes_alb.png");
 
-	const auto pEyeMaterial = MaterialManager::Get()->CreateMaterial<DiffuseMaterial_Skinned>();
+	const auto pEyeMaterial = MaterialManager::Get()->CreateMaterial<DiffuseMaterial_Shadow_Skinned>();
 	pEyeMaterial->SetDiffuseTexture(L"Textures/marioeye_alb.png");
 
 
 
-	marioMesh->SetMaterial(pBodyMaterial, 0);
-	marioMesh->SetMaterial(pBodyMaterial, 1);
-	marioMesh->SetMaterial(pBodyMaterial, 2);
-	marioMesh->SetMaterial(pFaceMaterial, 3);
-	marioMesh->SetMaterial(pHandsMaterial, 4);
-	marioMesh->SetMaterial(pBodyMaterial, 5);
-	marioMesh->SetMaterial(pFaceMaterial, 6);
-	marioMesh->SetMaterial(pHandsMaterial, 7);
-	marioMesh->SetMaterial(pShoeMaterial, 8);
-	marioMesh->SetMaterial(pEyeMaterial, 9);
+	m_pMarioModel->SetMaterial(pBodyMaterial, 0);
+	m_pMarioModel->SetMaterial(pBodyMaterial, 1);
+	m_pMarioModel->SetMaterial(pBodyMaterial, 2);
+	m_pMarioModel->SetMaterial(pFaceMaterial, 3);
+	m_pMarioModel->SetMaterial(pHandsMaterial, 4);
+	m_pMarioModel->SetMaterial(pBodyMaterial, 5);
+	m_pMarioModel->SetMaterial(pFaceMaterial, 6);
+	m_pMarioModel->SetMaterial(pHandsMaterial, 7);
+	m_pMarioModel->SetMaterial(pShoeMaterial, 8);
+	m_pMarioModel->SetMaterial(pEyeMaterial, 9);
 
 	// get half height from character capsule
-	marioObject->GetTransform()->Translate(0, -(characterDesc.controller.height / 2), 0);
+	//-characterDesc.controller.height
 
 	//////////////////////////////////////////////////////////////////////////
 	//							Mario animations
 	//////////////////////////////////////////////////////////////////////////
-	pAnimator = marioMesh->GetAnimator();
+	
+}
+
+void Mario::PostInitialize(const SceneContext&)
+{
+	pAnimator = m_pMarioModel->GetAnimator();
 	pAnimator->SetAnimation(m_AnimationClipId);
 	pAnimator->SetAnimationSpeed(m_AnimationSpeed);
 
@@ -98,12 +79,12 @@ void Mario::Initialize(const SceneContext& sceneContext)
 
 void Mario::DrawImGui()
 {
-	m_pCharacter->DrawImGui();
+	 reinterpret_cast<Character*>(GetParent())->DrawImGui();
 }
 
 void Mario::Update(const SceneContext&)
 {
-	uint32_t state = m_pCharacter->GetState();
+	uint32_t state = reinterpret_cast<Character*>(GetParent())->GetState();
 
 	if (state & StateBitfield::HasStartedIdle)
 	{

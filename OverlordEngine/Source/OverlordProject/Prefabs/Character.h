@@ -15,7 +15,7 @@ struct CharacterDesc
 	}
 
 	float maxMoveSpeed{ 25.f };
-	float maxFallSpeed{ 30.f };
+	float maxFallSpeed{ 50.f };
 
 	float JumpSpeed{ 35.f };
 

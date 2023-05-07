@@ -4,9 +4,13 @@
 Character::Character(const CharacterDesc& characterDesc, GameObject* visuals) :
 	m_CharacterDesc{ characterDesc },
 	m_MoveAcceleration(characterDesc.maxMoveSpeed / characterDesc.moveAccelerationTime),
-	m_FallAcceleration(characterDesc.maxFallSpeed / characterDesc.fallAccelerationTime),
-	m_pVisuals{ AddChild(visuals) }
-{}
+	m_FallAcceleration(characterDesc.maxFallSpeed / characterDesc.fallAccelerationTime)
+{
+	if (visuals)
+	{
+		m_pVisuals = AddChild(visuals);
+	}
+}
 
 void Character::Initialize(const SceneContext& /*sceneContext*/)
 {
@@ -284,6 +288,8 @@ void Character::Update(const SceneContext& sceneContext)
 		//{
 		//	m_IsGrounded = false;
 		//}
+
+		//m_pVisuals->GetTransform()->Translate(m_pControllerComponent->GetTransform()->GetWorldPosition());
 	}
 }
 

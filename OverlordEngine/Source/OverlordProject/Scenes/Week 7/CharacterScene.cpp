@@ -2,6 +2,8 @@
 #include "CharacterScene.h"
 
 #include "Prefabs/Character.h"
+#include "Prefabs/CubePrefab.h"
+#include "Prefabs/Mario.h"
 #include "Materials/ColorMaterial.h"
 
 void CharacterScene::Initialize()
@@ -21,8 +23,8 @@ void CharacterScene::Initialize()
 	characterDesc.actionId_MoveRight = CharacterMoveRight;
 	characterDesc.actionId_Jump = CharacterJump;
 
-	m_pCharacter = AddChild(new Character(characterDesc, nullptr));
-	m_pCharacter->GetTransform()->Translate(0.f, 5.f, 0.f);
+	m_pCharacter = AddChild(new Character(characterDesc, new Mario()));
+	m_pCharacter->GetTransform()->Translate(0.f, 50.f, 10.f);
 
 	//Simple Level
 	const auto pLevelObject = AddChild(new GameObject());

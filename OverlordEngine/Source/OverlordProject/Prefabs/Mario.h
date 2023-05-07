@@ -16,11 +16,13 @@ public:
 
 protected:
 	void Initialize(const SceneContext&) override;
+	void PostInitialize(const SceneContext&) override;
 	void Update(const SceneContext&) override;
 
 private:
 	ModelAnimator* pAnimator{};
 	Character* m_pCharacter{};
+	ModelComponent* m_pMarioModel{};
 
 	int m_AnimationClipId{ 0 };
 	float m_AnimationSpeed{ 1.f };

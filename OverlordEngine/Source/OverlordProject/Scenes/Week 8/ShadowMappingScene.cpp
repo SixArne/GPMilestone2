@@ -4,6 +4,8 @@
 #include "Materials/Shadow/DiffuseMaterial_Shadow.h"
 #include "Materials/Shadow/DiffuseMaterial_Shadow_Skinned.h"
 
+#include "Prefabs/Character.h"
+#include "Prefabs/Mario.h"
 
 void ShadowMappingScene::Initialize()
 {
@@ -12,27 +14,42 @@ void ShadowMappingScene::Initialize()
 
 	m_SceneContext.pLights->SetDirectionalLight({ -95.6139526f,66.1346436f,-41.1850471f }, { 0.740129888f, -0.597205281f, 0.309117377f });
 
-	//Materials
-	//*********
+	////Materials
+	////*********
 	const auto pPeasantMaterial = MaterialManager::Get()->CreateMaterial<DiffuseMaterial_Shadow_Skinned>();
 	pPeasantMaterial->SetDiffuseTexture(L"Textures/PeasantGirl_Diffuse.png");
 
 	const auto pGroundMaterial = MaterialManager::Get()->CreateMaterial<DiffuseMaterial_Shadow>();
 	pGroundMaterial->SetDiffuseTexture(L"Textures/GroundBrick.jpg");
+	
 
 	//Ground Mesh
 	//***********
 	const auto pGroundObj = new GameObject();
 	const auto pGroundModel = new ModelComponent(L"Meshes/UnitPlane.ovm");
 	pGroundModel->SetMaterial(pGroundMaterial);
-
 	pGroundObj->AddComponent(pGroundModel);
 	pGroundObj->GetTransform()->Scale(10.0f, 10.0f, 10.0f);
 
 	AddChild(pGroundObj);
 
+	GameSceneExt::CreatePhysXGroundPlane(*this);
 	//Character Mesh
 	//**************
+	//Character
+	const auto pDefaultMaterial = PxGetPhysics().createMaterial(0.5f, 0.5f, 0.5f);
+
+	CharacterDesc characterDesc{ pDefaultMaterial };
+	characterDesc.actionId_MoveForward = CharacterMoveForward;
+	characterDesc.actionId_MoveBackward = CharacterMoveBackward;
+	characterDesc.actionId_MoveLeft = CharacterMoveLeft;
+	characterDesc.actionId_MoveRight = CharacterMoveRight;
+	characterDesc.actionId_Jump = CharacterJump;
+
+	auto character = AddChild(new Character(characterDesc, new Mario()));
+	character->GetTransform()->Translate(0.f, 50.f, 10.f);
+	character->GetTransform()->Scale(5, 5, 5);
+
 	const auto pObject = AddChild(new GameObject);
 	const auto pModel = pObject->AddComponent(new ModelComponent(L"Meshes/PeasantGirl.ovm"));
 	pModel->SetMaterial(pPeasantMaterial);
@@ -45,9 +62,26 @@ void ShadowMappingScene::Initialize()
 		pAnimator->Play();
 	}
 
+
 	//Input
 	//*****
-	m_SceneContext.pInput->AddInputAction(InputAction(0, InputState::pressed, VK_SPACE));
+
+
+	//Input
+	auto inputAction = InputAction(CharacterMoveLeft, InputState::down, 'A');
+	m_SceneContext.pInput->AddInputAction(inputAction);
+
+	inputAction = InputAction(CharacterMoveRight, InputState::down, 'D');
+	m_SceneContext.pInput->AddInputAction(inputAction);
+
+	inputAction = InputAction(CharacterMoveForward, InputState::down, 'W');
+	m_SceneContext.pInput->AddInputAction(inputAction);
+
+	inputAction = InputAction(CharacterMoveBackward, InputState::down, 'S');
+	m_SceneContext.pInput->AddInputAction(inputAction);
+
+	inputAction = InputAction(CharacterJump, InputState::pressed, VK_SPACE, -1, XINPUT_GAMEPAD_A);
+	m_SceneContext.pInput->AddInputAction(inputAction);
 }
 
 void ShadowMappingScene::Update()
@@ -74,4 +108,5 @@ void ShadowMappingScene::OnGUI()
 	ImGui::Checkbox("Draw ShadowMap", &m_DrawShadowMap);
 	ImGui::SliderFloat("ShadowMap Scale", &m_ShadowMapScale, 0.f, 1.f);
 	//MaterialManager::Get()->GetMaterial(2)->DrawImGui();
+	reinterpret_cast<Mario*>(m_Mario)->DrawImGui();
 }
