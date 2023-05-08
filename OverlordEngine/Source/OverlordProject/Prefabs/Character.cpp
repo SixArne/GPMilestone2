@@ -9,13 +9,14 @@ Character::Character(const CharacterDesc& characterDesc, GameObject* visuals) :
 	if (visuals)
 	{
 		m_pVisuals = AddChild(visuals);
+		m_pVisuals->GetTransform()->Translate(0, 0, 0);
 	}
 }
 
 void Character::Initialize(const SceneContext& /*sceneContext*/)
 {
 
-	m_CharacterDesc.controller.contactOffset = 0.1f;
+	m_CharacterDesc.controller.contactOffset = 0.000001f;
 	//Controller
 	m_pControllerComponent = AddComponent(new ControllerComponent(m_CharacterDesc.controller));
 

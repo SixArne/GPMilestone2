@@ -30,6 +30,7 @@ void ShadowMappingScene::Initialize()
 	pGroundModel->SetMaterial(pGroundMaterial);
 	pGroundObj->AddComponent(pGroundModel);
 	pGroundObj->GetTransform()->Scale(10.0f, 10.0f, 10.0f);
+	//pGroundObj->GetTransform()->Translate(0, -10, 0);
 
 	AddChild(pGroundObj);
 
@@ -45,10 +46,13 @@ void ShadowMappingScene::Initialize()
 	characterDesc.actionId_MoveLeft = CharacterMoveLeft;
 	characterDesc.actionId_MoveRight = CharacterMoveRight;
 	characterDesc.actionId_Jump = CharacterJump;
+	characterDesc.controller.height = 5.f;
+	characterDesc.controller.radius = 2.f;
+	characterDesc.JumpSpeed = 80.f;
 
 	auto character = AddChild(new Character(characterDesc, new Mario()));
-	character->GetTransform()->Translate(0.f, 50.f, 10.f);
-	character->GetTransform()->Scale(5, 5, 5);
+	character->GetTransform()->Translate(0.f, 2.f, 10.f);
+	character->GetTransform()->Scale(1.5, 1.5, 1.5);
 
 	const auto pObject = AddChild(new GameObject);
 	const auto pModel = pObject->AddComponent(new ModelComponent(L"Meshes/PeasantGirl.ovm"));
@@ -108,5 +112,5 @@ void ShadowMappingScene::OnGUI()
 	ImGui::Checkbox("Draw ShadowMap", &m_DrawShadowMap);
 	ImGui::SliderFloat("ShadowMap Scale", &m_ShadowMapScale, 0.f, 1.f);
 	//MaterialManager::Get()->GetMaterial(2)->DrawImGui();
-	reinterpret_cast<Mario*>(m_Mario)->DrawImGui();
+	//reinterpret_cast<Mario*>(m_Mario)->DrawImGui();
 }

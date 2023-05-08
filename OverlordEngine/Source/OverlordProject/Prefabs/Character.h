@@ -20,7 +20,7 @@ struct CharacterDesc
 	float JumpSpeed{ 35.f };
 
 	float moveAccelerationTime{ .3f };
-	float fallAccelerationTime{ .3f };
+	float fallAccelerationTime{ .8f };
 
 	PxCapsuleControllerDesc controller{};
 
