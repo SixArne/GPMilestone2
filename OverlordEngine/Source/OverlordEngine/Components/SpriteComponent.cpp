@@ -34,6 +34,6 @@ void SpriteComponent::Draw(const SceneContext& /*sceneContext*/)
 	auto rot = MathHelper::QuaternionToEuler(pTrans->GetRotation()).z;
 	auto scale = pTrans->GetScale();
 
-	SpriteRenderer::Get()->AppendSprite(m_pTexture, pos, m_Color, m_Pivot, { scale.x, scale.y }, rot);
+	SpriteRenderer::Get()->AppendSprite(m_pTexture, pos, m_Color, m_Pivot, { scale.x, scale.y }, rot, 0.99f);
 
 }

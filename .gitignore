@@ -1,5 +1,6 @@
 # https://github.com/jeffdemeutter/OverlordEngine/blob/master/OverlordProject/Resources/Effects/UberShader.fx
 
-OverlordEngine/.vs
-OverlordEngine/_build
-OverlordEngine/_intermediate
+OverlordEngine/Source/.vs
+OverlordEngine/Source/_build
+OverlordEngine/Source/_intermediate
+OverlordEngine/Source/OverlordEngine/_build
