@@ -34,6 +34,8 @@
     <ClCompile Include="Scenes\Week 10\PostProcessingScene.cpp" />
     <ClCompile Include="Materials\Post\PostGrayscale.cpp" />
     <ClCompile Include="Materials\Post\PostBlur.cpp" />
+    <ClCompile Include="Scenes\EndProject\MainMenu.cpp" />
+    <ClCompile Include="Prefabs\Menu\MenuItem.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="MainGame.h" />
@@ -70,5 +72,7 @@
     <ClInclude Include="Scenes\Week 10\PostProcessingScene.h" />
     <ClInclude Include="Materials\Post\PostGrayscale.h" />
     <ClInclude Include="Materials\Post\PostBlur.h" />
+    <ClInclude Include="Scenes\EndProject\MainMenu.h" />
+    <ClInclude Include="Prefabs\Menu\MenuItem.h" />
   </ItemGroup>
 </Project>

@@ -93,6 +93,8 @@
     <PostBuildEvent />
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Prefabs\Menu\MenuItem.cpp" />
+    <ClCompile Include="Scenes\EndProject\MainMenu.cpp" />
     <ClCompile Include="Materials\Post\PostGrayscale.cpp" />
     <ClCompile Include="Materials\Post\PostBlur.cpp" />
     <ClCompile Include="Prefabs\Mario.cpp" />
@@ -145,6 +147,8 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Prefabs\Menu\MenuItem.h" />
+    <ClInclude Include="Scenes\EndProject\MainMenu.h" />
     <ClInclude Include="Materials\Post\PostGrayscale.h" />
     <ClInclude Include="Materials\Post\PostBlur.h" />
     <ClInclude Include="Prefabs\Mario.h" />

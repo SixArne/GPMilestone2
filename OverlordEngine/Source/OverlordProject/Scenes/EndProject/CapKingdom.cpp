@@ -22,16 +22,15 @@ void CapKingdom::Initialize()
 
 	m_SceneContext.pLights->SetDirectionalLight({ -95.6139526f,66.1346436f,-41.1850471f }, { 0.740129888f, -0.597205281f, 0.309117377f });
 
-	FMOD::Sound* pSound = nullptr;
-	if (!pSound)
+	if (!m_pSound)
 	{
 
-		SoundManager::Get()->GetSystem()->createStream("Resources/Sound/altar_cave.mp3", FMOD_DEFAULT, nullptr, &pSound);
-		pSound->setMode(FMOD_LOOP_NORMAL);
-		pSound->set3DMinMaxDistance(0.f, 100.f);
+		SoundManager::Get()->GetSystem()->createStream("Resources/Sound/altar_cave.mp3", FMOD_DEFAULT, nullptr, &m_pSound);
+		m_pSound->setMode(FMOD_LOOP_NORMAL);
+		m_pSound->set3DMinMaxDistance(0.f, 100.f);
 	}
 
-	SoundManager::Get()->GetSystem()->playSound(pSound, nullptr, false, &m_pBackgroundMusic);
+	SoundManager::Get()->GetSystem()->playSound(m_pSound, nullptr, true, &m_pBackgroundMusic);
 	m_pBackgroundMusic->setVolume(0.1f);
 
 	m_SceneContext.pInput->AddInputAction(InputAction(0, InputState::pressed, VK_DELETE));
@@ -39,7 +38,11 @@ void CapKingdom::Initialize()
 
 void CapKingdom::Update()
 {
-
+	if (!m_HasStartedLevel)
+	{
+		SoundManager::Get()->GetSystem()->playSound(m_pSound, nullptr, false, &m_pBackgroundMusic);
+		m_HasStartedLevel = true;
+	}
 }
 
 void CapKingdom::Draw()

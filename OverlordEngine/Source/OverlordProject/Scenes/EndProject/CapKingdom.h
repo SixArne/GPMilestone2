@@ -24,6 +24,7 @@ protected:
 private:
 	GameObject* m_pModelGameObject{};
 	FMOD::Channel* m_pBackgroundMusic = nullptr;
+	FMOD::Sound* m_pSound = nullptr;
 	FreeCamera* m_pCamera{};
 	GameObject* m_pProtagonist{};
 
@@ -48,6 +49,8 @@ private:
 
 
 	bool m_DrawShadowMap{ false };
+	bool m_HasStartedLevel{ true };
+
 	float m_ShadowMapScale{ 0.3f };
 	XMFLOAT3 m_LightDirection{ -0.577f, -0.577f, 0.577f };
 };
