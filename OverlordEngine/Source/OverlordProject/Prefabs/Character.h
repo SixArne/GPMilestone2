@@ -14,12 +14,12 @@ struct CharacterDesc
 		controller.material = pMaterial;
 	}
 
-	float maxMoveSpeed{ 25.f };
-	float maxFallSpeed{ 50.f };
+	float maxMoveSpeed{ 80.f };
+	float maxFallSpeed{ 100.f };
 
-	float JumpSpeed{ 35.f };
+	float JumpSpeed{ 50.f };
 
-	float moveAccelerationTime{ .3f };
+	float moveAccelerationTime{ .1f };
 	float fallAccelerationTime{ .8f };
 
 	PxCapsuleControllerDesc controller{};

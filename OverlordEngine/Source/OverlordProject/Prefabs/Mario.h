@@ -20,9 +20,13 @@ protected:
 	void Update(const SceneContext&) override;
 
 private:
+	void InitializeSounds();
+	
 	ModelAnimator* pAnimator{};
 	Character* m_pCharacter{};
 	ModelComponent* m_pMarioModel{};
+	FMOD::Channel* m_pJumpSound = nullptr;
+	FMOD::Sound* m_pJumpSoundEffect = nullptr;
 
 	int m_AnimationClipId{ 0 };
 	float m_AnimationSpeed{ 1.f };

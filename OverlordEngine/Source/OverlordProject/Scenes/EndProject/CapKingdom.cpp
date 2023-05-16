@@ -143,10 +143,13 @@ void CapKingdom::CreateFirstIsland()
 	pRigidBodyMesh->AddCollider(PxTriangleMeshGeometry{ pTriangleFloorGeo }, *pDefaultMat);
 	pRigidBodyMesh->AddCollider(PxTriangleMeshGeometry{ pTriangleWallsGeo }, *pDefaultMat);
 
-	entrance->GetTransform()->Rotate(90, 0, 0);
+
 
 	entrance->AddComponent(pModel);
 	entrance->AddComponent(pRigidBodyMesh);
+
+	entrance->GetTransform()->Rotate(90, 0, 0);
+
 	AddChild(entrance);
 }
 
@@ -204,10 +207,23 @@ void CapKingdom::CreateSecondIsland()
 	pModel->SetMaterial(pMetalFenceMaterial, 4);
 	pModel->SetMaterial(pStripes, 5);
 
+	// Setup physics
+	const auto pRigidBodyMesh = new RigidBodyComponent(true);
+	pRigidBodyMesh->SetKinematic(true);
+	auto pDefaultMat = PxGetPhysics().createMaterial(0.5f, 0.5f, 0.8f);
+	auto* pTriangleFloorGeo = ContentManager::Load<PxTriangleMesh>(L"Meshes/second_island_collision_floor.ovpt");
+	//auto* pTriangleWallsGeo = ContentManager::Load<PxTriangleMesh>(L"Meshes/first_island_collision_walls.ovpt");
+
+
+	pRigidBodyMesh->AddCollider(PxTriangleMeshGeometry{ pTriangleFloorGeo }, *pDefaultMat);
+	//pRigidBodyMesh->AddCollider(PxTriangleMeshGeometry{ pTriangleWallsGeo }, *pDefaultMat);
+
 
 	entrance->GetTransform()->Rotate(90, 0, 0);
 
 	entrance->AddComponent(pModel);
+	entrance->AddComponent(pRigidBodyMesh);
+
 	AddChild(entrance);
 }
 
@@ -265,10 +281,19 @@ void CapKingdom::CreateBridge()
 	pModel->SetMaterial(pHatMetalMaterial, 4);
 	pModel->SetMaterial(pMetalFenceMaterial, 5);
 
+	// Setup physics
+	const auto pRigidBodyMesh = new RigidBodyComponent(true);
+	pRigidBodyMesh->SetKinematic(true);
+	auto pDefaultMat = PxGetPhysics().createMaterial(0.5f, 0.5f, 0.8f);
+	auto* pTriangleFloorGeo = ContentManager::Load<PxTriangleMesh>(L"Meshes/second_island_bridge_collision.ovpt");
+
+	pRigidBodyMesh->AddCollider(PxTriangleMeshGeometry{ pTriangleFloorGeo }, *pDefaultMat);
 
 	entrance->GetTransform()->Rotate(90, 0, 0);
 
 	entrance->AddComponent(pModel);
+	entrance->AddComponent(pRigidBodyMesh);
+
 	AddChild(entrance);
 }
 
@@ -285,9 +310,12 @@ void CapKingdom::CreatePlayer()
 	characterDesc.actionId_MoveLeft = CharacterMoveLeft;
 	characterDesc.actionId_MoveRight = CharacterMoveRight;
 	characterDesc.actionId_Jump = CharacterJump;
-	characterDesc.controller.height = 5.f;
-	characterDesc.controller.radius = 2.f;
+	characterDesc.controller.height = 8.5f;
+	characterDesc.controller.radius = 3.f;
 	characterDesc.JumpSpeed = 80.f;
+	characterDesc.maxMoveSpeed = 200.f;
+	characterDesc.maxFallSpeed = 120.f;
+	characterDesc.fallAccelerationTime = 0.8f;
 
 	m_pMario = AddChild(new Character(characterDesc, new Mario()));
 
@@ -307,6 +335,7 @@ void CapKingdom::CreatePlayer()
 	inputAction = InputAction(CharacterJump, InputState::pressed, VK_SPACE, -1, XINPUT_GAMEPAD_A);
 	m_SceneContext.pInput->AddInputAction(inputAction);
 
-	m_pMario->GetTransform()->Scale(1.5, 1.5, 1.5);
+	m_pMario->GetTransform()->Scale(4, 4, 4);
+
 	//m_pMario->GetTransform()->Scale(5, 5, 5);
 }

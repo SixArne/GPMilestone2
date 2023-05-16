@@ -9,8 +9,8 @@
 // #define W7
 // #define W8
 // #define W9
-#define W10
-//#define END_GAME
+// #define W10
+#define END_GAME
 
 /*MILESTONE Content*/
 // #define MILESTONE_1

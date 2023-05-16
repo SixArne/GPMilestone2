@@ -27,7 +27,7 @@ void Character::Initialize(const SceneContext& /*sceneContext*/)
 	m_pCameraComponent = pCamera->GetComponent<CameraComponent>();
 	m_pCameraComponent->SetActive(true);
 
-	pCamera->GetTransform()->Translate(0.f, m_CharacterDesc.controller.height, -20.f);
+	pCamera->GetTransform()->Translate(0.f, m_CharacterDesc.controller.height, -30.f);
 }
 
 void Character::Update(const SceneContext& sceneContext)

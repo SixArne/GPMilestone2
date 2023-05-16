@@ -15,7 +15,7 @@ void Mario::Initialize(const SceneContext&)
 	auto marioObject = AddChild(new GameObject());
 	m_pMarioModel = marioObject->AddComponent(new ModelComponent(L"Meshes/mario.ovm"));
 
-	marioObject->GetTransform()->Translate(0.f, -2.5f, 0.f);
+	marioObject->GetTransform()->Translate(0.f, -1.5f, 0.f);
 
 	//const auto pDefaultMaterial = PxGetPhysics().createMaterial(0.5f, 0.5f, 0.5f);
 
@@ -58,6 +58,7 @@ void Mario::Initialize(const SceneContext&)
 	//							Mario animations
 	//////////////////////////////////////////////////////////////////////////
 	
+	InitializeSounds();
 }
 
 void Mario::PostInitialize(const SceneContext&)
@@ -95,6 +96,7 @@ void Mario::Update(const SceneContext&)
 	{
 		Logger::LogDebug(L"HasStartedJump");
 		pAnimator->SetAnimation(L"Jump");
+		SoundManager::Get()->GetSystem()->playSound(m_pJumpSoundEffect, nullptr, false, &m_pJumpSound);
 		pAnimator->Play();
 
 	}
@@ -103,4 +105,18 @@ void Mario::Update(const SceneContext&)
 		pAnimator->SetAnimation(L"Run");
 		pAnimator->Play();
 	}
+}
+
+void Mario::InitializeSounds()
+{
+	if (!m_pJumpSoundEffect)
+	{
+
+		SoundManager::Get()->GetSystem()->createStream("Resources/Sound/jump.mp3", FMOD_DEFAULT, nullptr, &m_pJumpSoundEffect);
+		m_pJumpSoundEffect->setMode(FMOD_LOOP_OFF);
+		m_pJumpSoundEffect->set3DMinMaxDistance(0.f, 100.f);
+	}
+
+	SoundManager::Get()->GetSystem()->playSound(m_pJumpSoundEffect, nullptr, true, &m_pJumpSound);
+	m_pJumpSound->setVolume(0.1f);
 }
