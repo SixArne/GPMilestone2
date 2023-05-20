@@ -45,6 +45,9 @@ private:
 	void CreateBridge();
 	void CreatePlayer();
 	void CreateEnemies();
+	void CreateHud();
+
+	void UpdateHUDText();
 
 	Character* m_pMario{};
 
@@ -64,4 +67,9 @@ private:
 	float m_ShadowMapScale{ 0.3f };
 	XMFLOAT3 m_LightDirection{ -0.577f, -0.577f, 0.577f };
 	FMOD_VECTOR m_PrevListenerPosition{};
+
+	GameObject* m_HealthHUD{};
+	SpriteFont* m_pFont{};
+
+	int m_Lives{3};
 };

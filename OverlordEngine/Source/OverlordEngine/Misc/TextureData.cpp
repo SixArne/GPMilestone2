@@ -30,3 +30,8 @@ void TextureData::CreateGUID()
 	if(GUID_TextureData.Data1 == 0)
 		HANDLE_ERROR(CoCreateGuid(&GUID_TextureData));
 }
+
+XMFLOAT2 TextureData::GetDimensions()
+{
+	return m_Dimension;
+}

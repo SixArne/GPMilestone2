@@ -21,7 +21,7 @@ void CapKingdom::Initialize()
 	CreateWalls();*/
 	CreateMap();
 	CreatePlayer();
-
+	CreateHud();
 
 
 	CreateEnemies();
@@ -40,6 +40,7 @@ void CapKingdom::Update()
 	}
 
 	UpdateAudioListeners();
+	UpdateHUDText();
 }
 
 void CapKingdom::Draw()
@@ -406,4 +407,28 @@ void CapKingdom::CreateEnemies()
 	bill->GetTransform()->Translate(0, 2, 0);
 
 	m_Bills.push_back(bill);
+}
+
+void CapKingdom::CreateHud()
+{
+	////////////////////////////////////////////////////////////////////
+	// Health indicator
+	////////////////////////////////////////////////////////////////////
+	m_HealthHUD = new GameObject();
+	auto sprite = m_HealthHUD->AddComponent(new SpriteComponent(L"Textures/Hud/hud_3_lives.png", { 0.5f,0.5f }, { 1.f,1.f,1.f,.5f }));
+	AddChild(m_HealthHUD);
+
+	m_HealthHUD->GetTransform()->Translate(m_SceneContext.windowWidth - sprite->GetDimensions().x, sprite->GetDimensions().y, .9f);
+	m_HealthHUD->GetTransform()->Scale(0.5f, 0.5f, 0.5f);
+	////////////////////////////////////////////////////////////////////
+	// Health text
+	////////////////////////////////////////////////////////////////////
+	m_pFont = ContentManager::Load<SpriteFont>(L"SpriteFonts/Consolas_32.fnt");
+}
+
+void CapKingdom::UpdateHUDText()
+{
+	// TODO: Make seperate prefab of this
+	XMFLOAT2 contentPosition{ m_SceneContext.windowWidth - 122, 105 };
+	TextRenderer::Get()->DrawText(m_pFont, StringUtil::utf8_decode(std::to_string(m_Lives)), contentPosition, XMFLOAT4{ 0,0,0,1 });
 }

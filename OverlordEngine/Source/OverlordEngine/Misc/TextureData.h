@@ -18,6 +18,8 @@ public:
 	static void CreateGUID();
 	static UUID GUID_TextureData;
 
+	XMFLOAT2 GetDimensions();
+
 private:
 	ID3D11Resource *m_pTexture{};
 	ID3D11ShaderResourceView *m_pTextureShaderResourceView{};

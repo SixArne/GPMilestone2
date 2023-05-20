@@ -18,6 +18,7 @@ public:
 	void SetPivot(const XMFLOAT2& pivot) { m_Pivot = pivot; }
 	void SetColor(const XMFLOAT4& color) { m_Color = color; }
 	void SetTexture(const std::wstring& spriteAsset);
+	XMFLOAT2 GetDimensions();
 
 protected:
 	void Initialize(const SceneContext& sceneContext) override;
