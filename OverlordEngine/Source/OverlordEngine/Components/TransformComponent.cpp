@@ -152,6 +152,58 @@ void TransformComponent::Move(const XMVECTOR& position)
 	Move(pos.x, pos.y, pos.z);
 }
 
+void TransformComponent::AddRotation(float x, float y, float z, bool degrees)
+{
+	m_IsTransformChanged |= TransformChanged::ROTATION;
+
+	// Load the current rotation into an XMVECTOR
+	XMVECTOR currentRotationQuaternion = XMLoadFloat4(&m_Rotation);
+
+	// Convert the current rotation quaternion to Euler angles
+	float yaw, pitch, roll;
+	float q0 = m_Rotation.w;
+	float q1 = m_Rotation.x;
+	float q2 = m_Rotation.y;
+	float q3 = m_Rotation.z;
+	roll = atan2f(2.0f * (q0 * q1 + q2 * q3), 1.0f - 2.0f * (q1 * q1 + q2 * q2));
+	pitch = asinf(2.0f * (q0 * q2 - q3 * q1));
+	yaw = atan2f(2.0f * (q0 * q3 + q1 * q2), 1.0f - 2.0f * (q2 * q2 + q3 * q3));
+
+	// Convert to degrees if needed
+	if (!degrees) {
+		roll = XMConvertToDegrees(roll);
+		pitch = XMConvertToDegrees(pitch);
+		yaw = XMConvertToDegrees(yaw);
+	}
+
+	// If the input rotation is in degrees, convert it to radians
+	if (degrees)
+	{
+		x = XMConvertToRadians(x);
+		y = XMConvertToRadians(y);
+		z = XMConvertToRadians(z);
+	}
+
+	// Add the input rotation to the current rotation
+	roll += x;
+	pitch += y;
+	yaw += z;
+
+	// Convert the resulting Euler angles back to a quaternion
+	if (degrees)
+	{
+		XMStoreFloat4(&m_Rotation, XMQuaternionRotationRollPitchYaw(
+			XMConvertToRadians(roll),
+			XMConvertToRadians(pitch),
+			XMConvertToRadians(yaw)
+		));
+	}
+	else
+	{
+		XMStoreFloat4(&m_Rotation, XMQuaternionRotationRollPitchYaw(roll, pitch, yaw));
+	}
+}
+
 void TransformComponent::Rotate(float x, float y, float z, bool degrees)
 {
 	//if (!CheckConstraints())

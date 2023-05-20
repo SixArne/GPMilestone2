@@ -23,6 +23,8 @@ public:
 	void Move(const XMFLOAT3& position);
 	void Move(const XMVECTOR& position);
 
+	void AddRotation(float x, float y, float z, bool degrees = true);
+
 	void Rotate(float x, float y, float z, bool degrees = true);
 	void Rotate(const XMFLOAT3& rotation, bool degrees = true);
 	void Rotate(const XMVECTOR& rotation, bool isQuaternion = true);

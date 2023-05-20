@@ -10,6 +10,11 @@ public:
 	MenuItem& operator=(MenuItem&& other) noexcept = delete;
 
 	void SetIsSelected(bool value);
+	void SetPosition(XMFLOAT2 position);
+	void SetColor(XMFLOAT4& color);
+	void SetText(const std::string& text);
+	const std::string& GetText();
+
 	void OnImGui();
 
 protected:

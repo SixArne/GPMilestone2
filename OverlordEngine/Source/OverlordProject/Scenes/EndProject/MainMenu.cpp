@@ -18,13 +18,10 @@ void MainMenu::Initialize()
 	auto inputAction = InputAction(MenuOptions::Play, InputState::pressed, VK_SPACE, -1, XINPUT_GAMEPAD_A);
 	m_SceneContext.pInput->AddInputAction(inputAction);
 
-	inputAction = InputAction(MenuOptions::Quit, InputState::pressed, VK_SPACE, -1, XINPUT_GAMEPAD_B);
+	inputAction = InputAction(MenuOptions::Down, InputState::pressed, VK_DOWN, -1, XINPUT_GAMEPAD_DPAD_DOWN);
 	m_SceneContext.pInput->AddInputAction(inputAction);
 
-	inputAction = InputAction(MenuOptions::Down, InputState::pressed, VK_SPACE, -1, XINPUT_GAMEPAD_DPAD_DOWN);
-	m_SceneContext.pInput->AddInputAction(inputAction);
-
-	inputAction = InputAction(MenuOptions::Up, InputState::pressed, VK_SPACE, -1, XINPUT_GAMEPAD_DPAD_UP);
+	inputAction = InputAction(MenuOptions::Up, InputState::pressed, VK_UP, -1, XINPUT_GAMEPAD_DPAD_UP);
 	m_SceneContext.pInput->AddInputAction(inputAction);
 
 	////////////////////////////////////////////////////////////
@@ -44,6 +41,13 @@ void MainMenu::Initialize()
 		m_pMenuLoop->set3DMinMaxDistance(0.f, 100.f);
 	}
 
+	if (!m_pMenuSelect)
+	{
+		SoundManager::Get()->GetSystem()->createStream("Resources/Sound/menu_select_short.mp3", FMOD_DEFAULT, nullptr, &m_pMenuSelect);
+		m_pMenuSelect->setMode(FMOD_LOOP_OFF);
+		m_pMenuSelect->set3DMinMaxDistance(0.f, 100.f);
+	}
+
 	SoundManager::Get()->GetSystem()->playSound(m_pMenuIntro, nullptr, false, &m_pBackgroundMusic);
 	m_pBackgroundMusic->setVolume(0.1f);
 
@@ -52,7 +56,13 @@ void MainMenu::Initialize()
 	//////////////////////////////////////////////////////////////
 
 	m_pPlayButton = AddChild(new MenuItem("Play"));
-	m_pPlayButton->GetTransform()->Translate(0, 0, 0);
+	m_pPlayButton->SetPosition(XMFLOAT2{ 250,360 });
+
+	m_pQuitButton = AddChild(new MenuItem("Quit"));
+	m_pQuitButton->SetPosition(XMFLOAT2{ 250,500 });
+
+	m_pButtons.push_back(m_pPlayButton);
+	m_pButtons.push_back(m_pQuitButton);
 }
 
 void MainMenu::Update()
@@ -73,24 +83,50 @@ void MainMenu::Update()
 		}
 	}
 
+	for (size_t i{}; i < m_pButtons.size(); i++)
+	{
+		if (i == m_CurrentButtonIdx)
+		{
+			m_pButtons[i]->SetIsSelected(true);
+		}
+		else
+		{
+			m_pButtons[i]->SetIsSelected(false);
+		}
+	}
+
 	if (m_SceneContext.pInput->IsActionTriggered(MenuOptions::Play))
 	{
-		SceneManager::Get()->NextScene();
-	}
-	else if (m_SceneContext.pInput->IsActionTriggered(MenuOptions::Quit))
-	{
-		//exit(0);
+		switch (m_CurrentButtonIdx)
+		{
+		case (int)MenuButtons::Play:
+		{
+			SceneManager::Get()->NextScene();
+			m_pBackgroundMusic->setPaused(true);
+			break;
+		}
+		case (int)MenuButtons::Quit:
+		{
+			Logger::LogDebug(L"Quiting game");
+			break;
+		}
+		}
 	}
 	else if (m_SceneContext.pInput->IsActionTriggered(MenuOptions::Down))
 	{
+		m_CurrentButtonIdx = (m_CurrentButtonIdx + 1) % m_pButtons.size();
+		PlayAudio(m_pMenuSelect, m_pSFXChannel, 1.f);
 	}
 	else if (m_SceneContext.pInput->IsActionTriggered(MenuOptions::Up))
 	{
+		m_CurrentButtonIdx = (m_CurrentButtonIdx - 1) % m_pButtons.size();
+		PlayAudio(m_pMenuSelect, m_pSFXChannel, 1.f);
 	}
 }
 
 void MainMenu::Draw()
 {
+	
 }
 
 void MainMenu::OnGUI()
@@ -100,4 +136,10 @@ void MainMenu::OnGUI()
 
 void MainMenu::PostDraw()
 {
+}
+
+void MainMenu::PlayAudio(FMOD::Sound* sound, FMOD::Channel* ch, float volume)
+{
+	SoundManager::Get()->GetSystem()->playSound(sound, nullptr, false, &ch);
+	ch->setVolume(volume);
 }

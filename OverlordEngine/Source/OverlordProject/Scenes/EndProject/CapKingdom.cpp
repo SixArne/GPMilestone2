@@ -6,6 +6,7 @@
 #include "Utils/ClipboardUtil.h"
 #include "Prefabs/Mario.h"
 #include "Prefabs/Character.h"
+#include "Prefabs/Enemies/BanzaiBill.h"
 #include <array>
 
 #include "Materials/Shadow/DiffuseMaterial_Shadow.h"
@@ -14,35 +15,31 @@ void CapKingdom::Initialize()
 {
 	m_SceneContext.settings.enableOnGUI = true;
 	m_SceneContext.settings.drawPhysXDebug = false;
+	m_SceneContext.settings.drawGrid = false;
 
 	/*CreateFloor();
 	CreateWalls();*/
 	CreateMap();
 	CreatePlayer();
 
+
+
+	CreateEnemies();
+
 	m_SceneContext.pLights->SetDirectionalLight({ -95.6139526f,66.1346436f,-41.1850471f }, { 0.740129888f, -0.597205281f, 0.309117377f });
-
-	if (!m_pSound)
-	{
-
-		SoundManager::Get()->GetSystem()->createStream("Resources/Sound/altar_cave.mp3", FMOD_DEFAULT, nullptr, &m_pSound);
-		m_pSound->setMode(FMOD_LOOP_NORMAL);
-		m_pSound->set3DMinMaxDistance(0.f, 100.f);
-	}
-
-	SoundManager::Get()->GetSystem()->playSound(m_pSound, nullptr, true, &m_pBackgroundMusic);
-	m_pBackgroundMusic->setVolume(0.1f);
-
 	m_SceneContext.pInput->AddInputAction(InputAction(0, InputState::pressed, VK_DELETE));
+
 }
 
 void CapKingdom::Update()
 {
 	if (!m_HasStartedLevel)
 	{
-		SoundManager::Get()->GetSystem()->playSound(m_pSound, nullptr, false, &m_pBackgroundMusic);
+		InitSound();
 		m_HasStartedLevel = true;
 	}
+
+	UpdateAudioListeners();
 }
 
 void CapKingdom::Draw()
@@ -71,6 +68,67 @@ void CapKingdom::OnGUI()
 
 	ImGui::Checkbox("Draw ShadowMap", &m_DrawShadowMap);
 	ImGui::SliderFloat("ShadowMap Scale", &m_ShadowMapScale, 0.f, 1.f);
+}
+
+void CapKingdom::InitSound()
+{
+	if (!m_pSound)
+	{
+		SoundManager::Get()->GetSystem()->createStream("Resources/Sound/altar_cave.mp3", FMOD_DEFAULT, nullptr, &m_pSound);
+		m_pSound->setMode(FMOD_LOOP_NORMAL);
+		m_pSound->set3DMinMaxDistance(0.f, 100.f);
+	}
+
+	SoundManager::Get()->GetSystem()->playSound(m_pSound, nullptr, false, &m_pBackgroundMusic);
+	m_pBackgroundMusic->setVolume(0.1f);
+
+	FMOD::Sound* pSound2{};
+	auto result = SoundManager::Get()->GetSystem()->createStream("Resources/Sound/rocket.mp3", FMOD_3D | FMOD_3D_LINEARROLLOFF, 0, &pSound2);
+
+
+	result = SoundManager::Get()->GetSystem()->playSound(pSound2, nullptr, false, &m_pChannel3D);
+
+	m_pChannel3D->setMode(FMOD_LOOP_NORMAL);
+	m_pChannel3D->setVolume(0.3f);
+	m_pChannel3D->set3DMinMaxDistance(1.f, 200.f);
+}
+
+inline FMOD_VECTOR ToFMod(XMFLOAT3 v)
+{
+	return FMOD_VECTOR{ v.x, v.y, v.z };
+}
+
+inline FMOD_VECTOR ToFMod(PxVec3 v)
+{
+	return FMOD_VECTOR{ v.x, v.y, v.z };
+}
+
+void CapKingdom::UpdateAudioListeners()
+{
+	auto camera = m_SceneContext.pCamera;
+	auto pos = ToFMod(m_pMario->GetTransform()->GetWorldPosition());
+	auto forward = ToFMod(camera->GetTransform()->GetForward());
+	auto up = ToFMod(m_pMario->GetTransform()->GetUp());
+
+	FMOD_VECTOR vel{};
+	auto dt = m_SceneContext.pGameTime->GetElapsed();
+	vel.x = (pos.x - m_PrevListenerPosition.x) / dt;
+	vel.y = (pos.y - m_PrevListenerPosition.y) / dt;
+	vel.z = (pos.z - m_PrevListenerPosition.z) / dt;
+	m_PrevListenerPosition = pos;
+
+	SoundManager::Get()->GetSystem()->set3DListenerAttributes(0, &pos, &vel, &forward, &up);
+
+	// source
+
+	for (auto bill : m_Bills)
+	{
+		auto spherePos = ToFMod(bill->GetTransform()->GetWorldPosition());
+		auto sphereVelocity = ToFMod(bill->GetRigidBody()->GetPxRigidActor()->is<PxRigidDynamic>()->getLinearVelocity());
+
+		m_pChannel3D->set3DAttributes(&spherePos, &sphereVelocity);
+	}
+	
 }
 
 void CapKingdom::CreateMap()
@@ -339,6 +397,13 @@ void CapKingdom::CreatePlayer()
 	m_SceneContext.pInput->AddInputAction(inputAction);
 
 	m_pMario->GetTransform()->Scale(4, 4, 4);
+	m_pMario->GetTransform()->Translate(100, 0, 5);
+}
 
-	//m_pMario->GetTransform()->Scale(5, 5, 5);
+void CapKingdom::CreateEnemies()
+{
+	auto bill = AddChild(new BanzaiBill(m_pMario));
+	bill->GetTransform()->Translate(0, 2, 0);
+
+	m_Bills.push_back(bill);
 }

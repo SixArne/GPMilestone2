@@ -93,6 +93,7 @@
     <PostBuildEvent />
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Prefabs\Enemies\BanzaiBill.cpp" />
     <ClCompile Include="Prefabs\Menu\MenuItem.cpp" />
     <ClCompile Include="Scenes\EndProject\MainMenu.cpp" />
     <ClCompile Include="Materials\Post\PostGrayscale.cpp" />
@@ -147,6 +148,7 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Prefabs\Enemies\BanzaiBill.h" />
     <ClInclude Include="Prefabs\Menu\MenuItem.h" />
     <ClInclude Include="Scenes\EndProject\MainMenu.h" />
     <ClInclude Include="Materials\Post\PostGrayscale.h" />

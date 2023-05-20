@@ -23,6 +23,8 @@ protected:
 	void PostDraw() override;
 
 private:
+	void PlayAudio(FMOD::Sound* sound, FMOD::Channel* ch, float volume);
+
 	enum MenuOptions
 	{
 		Play,
@@ -31,13 +33,25 @@ private:
 		Quit
 	};
 
+	enum class MenuButtons
+	{
+		Play,
+		Quit
+	};
+
 	GameObject* m_pBackground{};
 
 	FMOD::Channel* m_pBackgroundMusic{};
+	FMOD::Channel* m_pSFXChannel{};
 	FMOD::Sound* m_pMenuIntro{};
 	FMOD::Sound* m_pMenuLoop{};
+	FMOD::Sound* m_pMenuSelect{};
+
+	std::vector<MenuItem*> m_pButtons{};
+	size_t m_CurrentButtonIdx{0};
 
 	MenuItem* m_pPlayButton{};
+	MenuItem* m_pQuitButton{};
 
 	bool m_IsIntroPlaying{ true };
 };
