@@ -2,25 +2,27 @@
 #include "MainGame.h"
 
 /*LAB Content*/
-// #define W3
-// #define W4
-// #define W5
-// #define W6
-// #define W7
-// #define W8
-// #define W9
-// #define W10
-#define END_GAME
+//#define W3
+//#define W4
+//#define W5
+//#define W6
+//#define W7
+//#define W8
+//#define W9
+//#define W10
+//#define W11 //Deferred Rendering
+#define END
 
 /*MILESTONE Content*/
-// #define MILESTONE_1
-// #define MILESTONE_2
+//#define MILESTONE_1
+//#define MILESTONE_2
+//#define MILESTONE_3
 
 #pragma region Lab/Milestone Includes
 #ifdef W3
-//#include "Scenes/Week 3/MinionScene.h"
+#include "Scenes/Week 3/MinionScene.h"
 //#include "Scenes/Week 3/ComponentTestScene.h"
-#include "Scenes/Week 3/PongScene.h"
+//#include "Scenes/Week 3/PongScene.h"
 #endif
 
 #ifdef W4
@@ -31,8 +33,8 @@
 #endif
 
 #ifdef W5
-//#include "Scenes/Week 5/SoftwareSkinningScene_1.h"
-//#include "Scenes/Week 5/SoftwareSkinningScene_2.h"
+#include "Scenes/Week 5/SoftwareSkinningScene_1.h"
+#include "Scenes/Week 5/SoftwareSkinningScene_2.h"
 #include "Scenes/Week 5/SoftwareSkinningScene_3.h"
 #endif
 
@@ -58,34 +60,41 @@
 #include "Scenes/Week 10/PostProcessingScene.h"
 #endif
 
+#ifdef W11
+#include "Scenes/Week 11/DeferredRenderingScene.h"
+#endif
+
+#ifdef END
+#include "Scenes/EndProject/MainMenu.h"
+#include "Scenes/EndProject/CapKingdom.h"
+#endif
+
 #ifdef MILESTONE_1
 #include "Scenes/Week 3/PongScene.h"
 #include "Scenes/Week 4/ModelTestScene.h"
 #include "Scenes/Week 4/UberMaterialScene.h"
 #include "Scenes/Week 4/SpikyScene.h"
 #include "Scenes/Week 4/SpriteTestScene.h"
-#include "Scenes/Week 5/SoftwareSkinningScene_3.h"
-#include "Scenes/Week 6/HardwareSkinningScene.h"
 #endif
 
 #ifdef MILESTONE_2
-#include "Scenes/Week 7/FontTestScene.h"
-#include "Scenes/Week 7/CharacterScene.h"
-#include "Scenes/Week 7/PickingScene.h"
+#include "Scenes/Week 5/FontTestScene.h"
+#include "Scenes/Week 5/CharacterScene.h"
+#include "Scenes/Week 5/PickingScene.h"
+#include "Scenes/Week 6/SoftwareSkinningScene_3.h"
+#include "Scenes/Week 7/HardwareSkinningScene.h"
+#endif
+#pragma endregion
+
+#ifdef MILESTONE_3
 #include "Scenes/Week 8/ShadowMappingScene.h"
 #include "Scenes/Week 9/ParticleScene.h"
 #include "Scenes/Week 10/PostProcessingScene.h"
 #endif
-
-#ifdef END_GAME
-#include "Scenes/EndProject/MainMenu.h"
-#include "Scenes/EndProject/CapKingdom.h"
-#endif
-
 #pragma endregion
 
 //Game is preparing
-void MainGame::OnGamePreparing(GameContext& /*gameContext*/)
+void MainGame::OnGamePreparing(GameContext& gameContext)
 {
 	//Here you can change some game settings before engine initialize
 	//gameContext.windowWidth=... (default is 1280)
@@ -94,15 +103,17 @@ void MainGame::OnGamePreparing(GameContext& /*gameContext*/)
 	//gameContext.windowTitle = L"GP2 - Milestone 1 (2023) | (2DAE13) Doe John";
 	//gameContext.windowTitle = L"GP2 - Milestone 2 (2023) | (2DAE13) Doe John";
 	//gameContext.windowTitle = L"GP2 - Exam Project (2023) | (2DAE13) Doe John";
+
+	gameContext.windowTitle = L"GP2 - Deferred Rendering";
 }
 
 void MainGame::Initialize()
 {
 
 #ifdef W3
-	//SceneManager::Get()->AddGameScene(new MinionScene());
+	SceneManager::Get()->AddGameScene(new MinionScene());
 	//SceneManager::Get()->AddGameScene(new ComponentTestScene());
-	SceneManager::Get()->AddGameScene(new PongScene());
+	//SceneManager::Get()->AddGameScene(new PongScene());
 #endif
 
 #ifdef W4
@@ -113,8 +124,8 @@ void MainGame::Initialize()
 #endif
 
 #ifdef W5
-	//SceneManager::Get()->AddGameScene(new SoftwareSkinningScene_1());
-	//SceneManager::Get()->AddGameScene(new SoftwareSkinningScene_2());
+	SceneManager::Get()->AddGameScene(new SoftwareSkinningScene_1());
+	SceneManager::Get()->AddGameScene(new SoftwareSkinningScene_2());
 	SceneManager::Get()->AddGameScene(new SoftwareSkinningScene_3());
 #endif
 
@@ -140,28 +151,35 @@ void MainGame::Initialize()
 	SceneManager::Get()->AddGameScene(new PostProcessingScene());
 #endif
 
+#ifdef W11
+	SceneManager::Get()->AddGameScene(new DeferredRenderingScene());
+#endif
+
+#ifdef END
+	SceneManager::Get()->AddGameScene(new MainMenu());
+	SceneManager::Get()->AddGameScene(new CapKingdom());
+#endif
+
 #ifdef MILESTONE_1
 	SceneManager::Get()->AddGameScene(new PongScene());
 	SceneManager::Get()->AddGameScene(new ModelTestScene());
 	SceneManager::Get()->AddGameScene(new UberMaterialScene());
 	SceneManager::Get()->AddGameScene(new SpikyScene());
 	SceneManager::Get()->AddGameScene(new SpriteTestScene());
-	SceneManager::Get()->AddGameScene(new SoftwareSkinningScene_3());
-	SceneManager::Get()->AddGameScene(new HardwareSkinningScene());
 #endif
 
 #ifdef MILESTONE_2
 	SceneManager::Get()->AddGameScene(new FontTestScene());
 	SceneManager::Get()->AddGameScene(new CharacterScene());
 	SceneManager::Get()->AddGameScene(new PickingScene());
+	SceneManager::Get()->AddGameScene(new SoftwareSkinningScene_3());
+	SceneManager::Get()->AddGameScene(new HardwareSkinningScene());
+#endif
+
+#ifdef MILESTONE_3
 	SceneManager::Get()->AddGameScene(new ShadowMappingScene());
 	SceneManager::Get()->AddGameScene(new ParticleScene());
 	SceneManager::Get()->AddGameScene(new PostProcessingScene());
-#endif
-
-#ifdef END_GAME
-	SceneManager::Get()->AddGameScene(new MainMenu());
-	SceneManager::Get()->AddGameScene(new CapKingdom());
 #endif
 }
 

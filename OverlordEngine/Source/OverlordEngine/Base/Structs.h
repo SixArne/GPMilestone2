@@ -43,6 +43,7 @@ struct SceneContext
 	float windowHeight{};
 	float aspectRatio{};
 	UINT frameNumber{};
+	bool useDeferredRendering{ false };
 
 	SceneSettings settings{};
 };
@@ -51,7 +52,7 @@ struct GameContext
 {
 	UINT windowWidth{1280};
 	UINT windowHeight{720};
-	std::wstring windowTitle{L"GP2 - Milestone 1 (2023) | (2DAE08) Six Arne"};
+	std::wstring windowTitle{L"GP2 - Overlord Engine 2022 (x64)"};
 	HWND windowHandle{};
 	std::wstring contentRoot{ L"./Resources/" };
 	float inputUpdateFrequency{ 0.016f };

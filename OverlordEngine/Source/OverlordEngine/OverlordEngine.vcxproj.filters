@@ -54,6 +54,9 @@
     <ClCompile Include="Managers\LightManager.cpp" />
     <ClCompile Include="Graphics\ShadowMapRenderer.cpp" />
     <ClCompile Include="Components\ParticleEmitterComponent.cpp" />
+    <ClCompile Include="Deferred\DeferredLightRenderer.cpp" />
+    <ClCompile Include="Deferred\DeferredRenderer.cpp" />
+    <ClCompile Include="Deferred\QuadRenderer.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h" />
@@ -119,5 +122,8 @@
     <ClInclude Include="Managers\LightManager.h" />
     <ClInclude Include="Graphics\ShadowMapRenderer.h" />
     <ClInclude Include="Components\ParticleEmitterComponent.h" />
+    <ClInclude Include="Deferred\DeferredLightRenderer.h" />
+    <ClInclude Include="Deferred\DeferredRenderer.h" />
+    <ClInclude Include="Deferred\QuadRenderer.h" />
   </ItemGroup>
 </Project>

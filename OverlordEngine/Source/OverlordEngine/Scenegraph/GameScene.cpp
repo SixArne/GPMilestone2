@@ -1,7 +1,7 @@
 #include "stdafx.h"
 #include "GameScene.h"
 
-GameScene::GameScene(std::wstring sceneName):
+GameScene::GameScene(std::wstring sceneName) :
 	m_SceneName(std::move(sceneName))
 {
 }
@@ -64,7 +64,7 @@ void GameScene::RemoveChild(GameObject* pObject, bool deleteObject)
 	if (deleteObject)
 	{
 		SafeDelete(pObject);
-	}		
+	}
 }
 
 void GameScene::OnGUI()
@@ -163,8 +163,8 @@ void GameScene::RootDraw()
 	//SHADOW_PASS
 	//+++++++++++
 	TODO_W8(L"Implement Shadow Pass")
-	//1. BEGIN > ShadowMapRenderer::Begin (Initiate the ShadowPass)
-	ShadowMapRenderer::Get()->Begin(m_SceneContext);
+		//1. BEGIN > ShadowMapRenderer::Begin (Initiate the ShadowPass)
+		ShadowMapRenderer::Get()->Begin(m_SceneContext);
 	//2. DRAW_LOOP > For every GameObject (m_pChildren), call GameObject::RootShadowMapDraw
 	for (auto go : m_pChildren)
 	{
@@ -179,6 +179,10 @@ void GameScene::RootDraw()
 	//USER_PASS
 	//+++++++++
 	//User-Scene Draw
+
+	// DEFERRED BEGIN
+	DeferredRenderer::Get()->Begin(m_SceneContext);
+
 	Draw();
 
 	//Object-Scene Draw
@@ -186,6 +190,9 @@ void GameScene::RootDraw()
 	{
 		pChild->RootDraw(m_SceneContext);
 	}
+
+	// DEFERRED END
+	DeferredRenderer::Get()->End(m_SceneContext);
 
 	//SpriteRenderer Draw
 	SpriteRenderer::Get()->Draw(m_SceneContext);
@@ -402,7 +409,7 @@ void GameScene::RemovePostProcessingEffect(PostProcessingMaterial* pMaterial)
 	if (std::ranges::find(m_PostProcessingMaterials, pMaterial) != m_PostProcessingMaterials.end())
 		m_PostProcessingMaterials.erase(std::ranges::remove(m_PostProcessingMaterials, pMaterial).begin());
 }
- 
+
 void GameScene::SetActiveCamera(CameraComponent* pCameraComponent)
 {
 	//Prevent recursion!
