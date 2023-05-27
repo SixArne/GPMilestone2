@@ -15,10 +15,26 @@
 
 void CapKingdom::Initialize()
 {
+	auto inputAction = InputAction(CharacterMoveLeft, InputState::down, 'A');
+	m_SceneContext.pInput->AddInputAction(inputAction);
+
+	inputAction = InputAction(CharacterMoveRight, InputState::down, 'D');
+	m_SceneContext.pInput->AddInputAction(inputAction);
+
+	inputAction = InputAction(CharacterMoveForward, InputState::down, 'W');
+	m_SceneContext.pInput->AddInputAction(inputAction);
+
+	inputAction = InputAction(CharacterMoveBackward, InputState::down, 'S');
+	m_SceneContext.pInput->AddInputAction(inputAction);
+
+	inputAction = InputAction(CharacterJump, InputState::pressed, VK_SPACE, -1, XINPUT_GAMEPAD_A);
+	m_SceneContext.pInput->AddInputAction(inputAction);
+
+
 	m_SceneContext.settings.enableOnGUI = true;
 	m_SceneContext.settings.drawPhysXDebug = false;
 	m_SceneContext.settings.drawGrid = false;
-	m_SceneContext.useDeferredRendering = true;
+	m_SceneContext.useDeferredRendering = false;
 
 
 	/*CreateFloor();
@@ -33,11 +49,11 @@ void CapKingdom::Initialize()
 
 	m_SceneContext.pLights->SetDirectionalLight({ -95.6139526f,66.1346436f,-41.1850471f }, { 0.740129888f, -0.597205281f, 0.309117377f });
 	m_SceneContext.pInput->AddInputAction(InputAction(0, InputState::pressed, VK_DELETE));
-
 }
 
 void CapKingdom::Update()
 {
+
 	if (!m_HasStartedLevel)
 	{
 		InitSound();
@@ -68,10 +84,10 @@ void CapKingdom::OnGUI()
 	GameScene::OnGUI();
 	
 	m_DebugMaterial->DrawImGui();
-	m_pMario->DrawImGui();
+	m_pMarioComponent->DrawImGui();
 
 	ImGui::DragFloat3("direction", &m_LightDirection.x, 0.1f, -1.f, 1.f);
-	m_SceneContext.pLights->SetDirectionalLight(m_pMario->GetTransform()->GetWorldPosition(), m_LightDirection);
+	m_SceneContext.pLights->SetDirectionalLight(m_pMarioComponent->GetTransform()->GetWorldPosition(), m_LightDirection);
 
 	ImGui::Checkbox("Draw ShadowMap", &m_DrawShadowMap);
 	ImGui::SliderFloat("ShadowMap Scale", &m_ShadowMapScale, 0.f, 1.f);
@@ -113,9 +129,9 @@ inline FMOD_VECTOR ToFMod(PxVec3 v)
 void CapKingdom::UpdateAudioListeners()
 {
 	auto camera = m_SceneContext.pCamera;
-	auto pos = ToFMod(m_pMario->GetTransform()->GetWorldPosition());
+	auto pos = ToFMod(m_pMarioComponent->GetTransform()->GetWorldPosition());
 	auto forward = ToFMod(camera->GetTransform()->GetForward());
-	auto up = ToFMod(m_pMario->GetTransform()->GetUp());
+	auto up = ToFMod(m_pMarioComponent->GetTransform()->GetUp());
 
 	FMOD_VECTOR vel{};
 	auto dt = m_SceneContext.pGameTime->GetElapsed();
@@ -367,51 +383,15 @@ void CapKingdom::CreateBridge()
 
 void CapKingdom::CreatePlayer()
 {
+	m_pMarioComponent = AddChild(new Mario());
+	m_pMarioComponent->SetTag(L"mario");
 
-
-	const auto pDefaultMaterial = PxGetPhysics().createMaterial(0.5f, 0.5f, 0.5f);
-
-	//Character
-	CharacterDesc characterDesc{ pDefaultMaterial };
-	characterDesc.actionId_MoveForward = CharacterMoveForward;
-	characterDesc.actionId_MoveBackward = CharacterMoveBackward;
-	characterDesc.actionId_MoveLeft = CharacterMoveLeft;
-	characterDesc.actionId_MoveRight = CharacterMoveRight;
-	characterDesc.actionId_Jump = CharacterJump;
-	characterDesc.controller.height = 8.5f;
-	characterDesc.controller.radius = 3.f;
-	characterDesc.JumpSpeed = 80.f;
-	characterDesc.maxMoveSpeed = 200.f;
-	characterDesc.maxFallSpeed = 120.f;
-	characterDesc.fallAccelerationTime = 0.8f;
-
-	m_pMarioComponent = new Mario();
-	m_pMario = AddChild(new Character(characterDesc, m_pMarioComponent));
-	m_pMario->SetTag(L"mario");
-
-	//Input
-	auto inputAction = InputAction(CharacterMoveLeft, InputState::down, 'A');
-	m_SceneContext.pInput->AddInputAction(inputAction);
-
-	inputAction = InputAction(CharacterMoveRight, InputState::down, 'D');
-	m_SceneContext.pInput->AddInputAction(inputAction);
-
-	inputAction = InputAction(CharacterMoveForward, InputState::down, 'W');
-	m_SceneContext.pInput->AddInputAction(inputAction);
-
-	inputAction = InputAction(CharacterMoveBackward, InputState::down, 'S');
-	m_SceneContext.pInput->AddInputAction(inputAction);
-
-	inputAction = InputAction(CharacterJump, InputState::pressed, VK_SPACE, -1, XINPUT_GAMEPAD_A);
-	m_SceneContext.pInput->AddInputAction(inputAction);
-
-	m_pMario->GetTransform()->Scale(4, 4, 4);
-	m_pMario->GetTransform()->Translate(-550, 0, -553);
+	m_pMarioComponent->SetStartPosition(XMFLOAT3{ -550, 0, -553 });
 }
 
 void CapKingdom::CreateEnemies()
 {
-	auto bill = AddChild(new BanzaiBill(m_pMario));
+	auto bill = AddChild(new BanzaiBill(m_pMarioComponent));
 	bill->GetTransform()->Translate(0, 2, 0);
 
 	m_Bills.push_back(bill);

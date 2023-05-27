@@ -47,7 +47,7 @@ enum StateBitfield
 class Character : public GameObject
 {
 public:
-	Character(const CharacterDesc& characterDesc, GameObject* visuals);
+	Character(const CharacterDesc& characterDesc);
 	~Character() override = default;
 
 	Character(const Character& other) = delete;
@@ -57,6 +57,8 @@ public:
 
 	void DrawImGui();
 	uint32_t GetState();
+
+	XMFLOAT3 GetCurrentDirection() { return m_CurrentDirection; };
 
 protected:
 	void Initialize(const SceneContext&) override;

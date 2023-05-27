@@ -16,6 +16,9 @@ void ControllerComponent::Initialize(const SceneContext& /*sceneContext*/)
 
 		m_pController = GetGameObject()->GetScene()->GetPhysxProxy()->GetControllerManager()->createController(m_ControllerDesc);
 
+	
+
+
 		ASSERT_NULL_(m_pController);
 		m_pController->setUserData(this);
 		m_pController->getActor()->userData = this;

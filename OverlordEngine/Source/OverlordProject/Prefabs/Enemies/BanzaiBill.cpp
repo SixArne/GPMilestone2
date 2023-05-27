@@ -1,9 +1,9 @@
 #include "stdafx.h"
 #include "BanzaiBill.h"
 #include "Materials/Shadow/DiffuseMaterial_Shadow.h"
-#include "Prefabs/Character.h"
+#include "Prefabs/Mario.h"
 
-BanzaiBill::BanzaiBill(Character* mario)
+BanzaiBill::BanzaiBill(Mario* mario)
 	:m_pMario{mario}
 {
 }
@@ -46,9 +46,15 @@ void BanzaiBill::Initialize(const SceneContext&)
 	auto colliderInfo = m_pRigidBody->GetCollider(colliderId);
 	colliderInfo.SetTrigger(true);
 
-	this->SetOnTriggerCallBack([=](GameObject* /*pTrigger*/, GameObject* /*pOther*/, PxTriggerAction /*action*/)
+	this->SetOnTriggerCallBack([=](GameObject* /*pTrigger*/, GameObject* pOther, PxTriggerAction action)
 		{
-			
+			if (action == PxTriggerAction::ENTER)
+			{
+				if (pOther->GetTag() == L"mario")
+				{
+					std::cout << "Triggered bill" << std::endl;
+				}
+			}
 		});
 
 	m_pParticles->GetTransform()->Translate(0, 0, -10);
@@ -76,7 +82,7 @@ void BanzaiBill::InitializeSounds()
 
 XMFLOAT3 BanzaiBill::GetDirectionToMario()
 {
-	auto marioPosition = m_pMario->GetTransform()->GetWorldPosition();
+	auto marioPosition = m_pMario->GetMarioLocation();
 	auto billPosition = GetTransform()->GetWorldPosition();
 
 	XMVECTOR marioPositionVector = XMLoadFloat3(&marioPosition);

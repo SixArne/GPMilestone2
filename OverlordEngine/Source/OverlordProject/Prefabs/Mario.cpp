@@ -5,23 +5,60 @@
 #include "Prefabs/Character.h"
 
 
-void Mario::Initialize(const SceneContext&)
+void Mario::SetStartPosition(XMFLOAT3 position)
 {
-	
+	m_pCharacterController->GetTransform()->Translate(position);
+}
+
+XMFLOAT3 Mario::GetMarioLocation()
+{
+	return m_pCharacterController->GetTransform()->GetWorldPosition();
+}
+
+void Mario::Initialize(const SceneContext& /*sceneContext*/)
+{
+
 
 	//////////////////////////////////////////////////////////////////////////
 	//							Character Controller.
 	//////////////////////////////////////////////////////////////////////////
-	auto marioObject = AddChild(new GameObject());
-	m_pMarioModel = marioObject->AddComponent(new ModelComponent(L"Meshes/mario.ovm"));
+	m_pVisuals = new GameObject();
+	m_pMarioModel = m_pVisuals->AddComponent(new ModelComponent(L"Meshes/mario.ovm"));
+	m_pVisuals->GetTransform()->Scale(4, 4, 4);
+	m_pVisuals->GetTransform()->Translate(0, -8, 0);
 
+	//Character
+	
+	auto pDefaultMat = PxGetPhysics().createMaterial(0.5f, 0.5f, 0.8f);
+	
+
+	CharacterDesc characterDesc{ pDefaultMat };
+	characterDesc.actionId_MoveForward = CharacterMoveForward;
+	characterDesc.actionId_MoveBackward = CharacterMoveBackward;
+	characterDesc.actionId_MoveLeft = CharacterMoveLeft;
+	characterDesc.actionId_MoveRight = CharacterMoveRight;
+	characterDesc.actionId_Jump = CharacterJump;
+	characterDesc.controller.height = 8.5f;
+	characterDesc.controller.radius = 3.f;
+	characterDesc.JumpSpeed = 80.f;
+	characterDesc.maxMoveSpeed = 200.f;
+	characterDesc.maxFallSpeed = 120.f;
+	characterDesc.fallAccelerationTime = 0.8f;
+	m_pCharacterController = AddChild(new Character(characterDesc));
+	m_pCharacterController->AddChild(m_pVisuals);
+
+	m_pCharacterController->SetTag(L"mario");
+	m_pCharacterController->SetOnTriggerCallBack([=](GameObject* /*pTrigger*/, GameObject* /*pOther*/, PxTriggerAction /*action*/)
+		{
+			std::cout << "Triggered mario2" << std::endl;
+		});
 
 	/////////////////////////////////////////////////////////////////////////
 	//							Collision detection
 	//////////////////////////////////////////////////////////////////////////
-	auto rigidBody = marioObject->AddComponent(new RigidBodyComponent());
+	/*auto rigidBody = m_pVisuals->AddComponent(new RigidBodyComponent());
 	auto pDefaultMat = PxGetPhysics().createMaterial(0.5f, 0.5f, 0.8f);
-	auto colliderId = rigidBody->AddCollider(PxCapsuleGeometry{ 2.f, 5.f }, *pDefaultMat);
+	auto colliderId = rigidBody->AddCollider(PxCapsuleGeometry{ 4.f, 8.f }, *pDefaultMat);
 	rigidBody->SetKinematic(true);
 
 	auto colliderInfo = rigidBody->GetCollider(colliderId);
@@ -30,10 +67,7 @@ void Mario::Initialize(const SceneContext&)
 	this->SetOnTriggerCallBack([=](GameObject* pTrigger, GameObject* pOther, PxTriggerAction action)
 		{
 			OnCollision(pTrigger, pOther, action);
-		});
-
-	marioObject->GetTransform()->Translate(0.f, -1.5f, 0.f);
-
+		});*/
 	//////////////////////////////////////////////////////////////////////////
 	//							Mario model and textures.
 	//////////////////////////////////////////////////////////////////////////
@@ -95,18 +129,22 @@ void Mario::PostInitialize(const SceneContext&)
 
 void Mario::DrawImGui()
 {
-	 reinterpret_cast<Character*>(GetParent())->DrawImGui();
+	 //reinterpret_cast<Character*>(GetParent())->DrawImGui();
 }
 
 
 void Mario::Update(const SceneContext&)
 {
-	if (InputManager::IsKeyboardKey(InputState::released, VK_RIGHT))
-	{
-		m_Lives = 1;
-	}
+	////////////////////////////////////////////////////////////
+	//						Visual rotation
+	////////////////////////////////////////////////////////////
+	// Rotate the visuals only when moving
+	XMFLOAT3 direction = m_pCharacterController->GetCurrentDirection();
+	auto directionInDegrees = XMConvertToDegrees(atan2(direction.x, direction.z));
+	m_pVisuals->GetTransform()->Rotate(0, directionInDegrees + 180.f, 0);
 
-	uint32_t state = reinterpret_cast<Character*>(GetParent())->GetState();
+
+	uint32_t state = reinterpret_cast<Character*>(m_pCharacterController)->GetState();
 
 	if (state & StateBitfield::HasStartedIdle)
 	{

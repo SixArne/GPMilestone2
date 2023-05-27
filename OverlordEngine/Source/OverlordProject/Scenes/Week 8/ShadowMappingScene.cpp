@@ -38,21 +38,8 @@ void ShadowMappingScene::Initialize()
 	//Character Mesh
 	//**************
 	//Character
-	const auto pDefaultMaterial = PxGetPhysics().createMaterial(0.5f, 0.5f, 0.5f);
 
-	CharacterDesc characterDesc{ pDefaultMaterial };
-	characterDesc.actionId_MoveForward = CharacterMoveForward;
-	characterDesc.actionId_MoveBackward = CharacterMoveBackward;
-	characterDesc.actionId_MoveLeft = CharacterMoveLeft;
-	characterDesc.actionId_MoveRight = CharacterMoveRight;
-	characterDesc.actionId_Jump = CharacterJump;
-	characterDesc.controller.height = 5.f;
-	characterDesc.controller.radius = 2.f;
-	characterDesc.JumpSpeed = 80.f;
 
-	auto character = AddChild(new Character(characterDesc, new Mario()));
-	character->GetTransform()->Translate(0.f, 2.f, 10.f);
-	character->GetTransform()->Scale(1.5, 1.5, 1.5);
 
 	const auto pObject = AddChild(new GameObject);
 	const auto pModel = pObject->AddComponent(new ModelComponent(L"Meshes/PeasantGirl.ovm"));

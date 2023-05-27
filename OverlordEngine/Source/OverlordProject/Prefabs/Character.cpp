@@ -1,16 +1,12 @@
 #include "stdafx.h"
 #include "Character.h"
 
-Character::Character(const CharacterDesc& characterDesc, GameObject* visuals) :
+Character::Character(const CharacterDesc& characterDesc) :
 	m_CharacterDesc{ characterDesc },
 	m_MoveAcceleration(characterDesc.maxMoveSpeed / characterDesc.moveAccelerationTime),
 	m_FallAcceleration(characterDesc.maxFallSpeed / characterDesc.fallAccelerationTime)
 {
-	if (visuals)
-	{
-		m_pVisuals = AddChild(visuals);
-		m_pVisuals->GetTransform()->Translate(0, 0, 0);
-	}
+
 }
 
 void Character::Initialize(const SceneContext& /*sceneContext*/)
@@ -27,7 +23,8 @@ void Character::Initialize(const SceneContext& /*sceneContext*/)
 	m_pCameraComponent = pCamera->GetComponent<CameraComponent>();
 	m_pCameraComponent->SetActive(true);
 
-	pCamera->GetTransform()->Translate(0.f, m_CharacterDesc.controller.height, -30.f);
+
+	pCamera->GetTransform()->Translate(0.f, m_CharacterDesc.controller.height, -90.f);
 }
 
 void Character::Update(const SceneContext& sceneContext)
@@ -148,13 +145,6 @@ void Character::Update(const SceneContext& sceneContext)
 			else
 			{
 				m_State &= ~StateBitfield::HasStartedMoving;
-			}
-
-			// Rotate the visuals only when moving
-			if (m_pVisuals != nullptr)
-			{
-				auto directionInDegrees = XMConvertToDegrees(atan2(m_CurrentDirection.x, m_CurrentDirection.z));
-				m_pVisuals->GetTransform()->Rotate(0, directionInDegrees + 180.f, 0);
 			}
 		}
 		else

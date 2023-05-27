@@ -53,7 +53,6 @@ private:
 	void UpdateHUDText();
 	void UpdatePostProcess();
 
-	Character* m_pMario{};
 	Mario* m_pMarioComponent{};
 
 	float m_SinWave{};

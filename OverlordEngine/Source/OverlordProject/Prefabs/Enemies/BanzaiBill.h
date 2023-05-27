@@ -1,11 +1,11 @@
 #pragma once
 
-class Character;
+class Mario;
 
 class BanzaiBill : public GameObject
 {
 public:
-	BanzaiBill(Character* mario);
+	BanzaiBill(Mario* mario);
 	~BanzaiBill() override = default;
 
 	BanzaiBill(const BanzaiBill& other) = delete;
@@ -36,7 +36,7 @@ private:
 	GameObject* m_pParticles{};
 	GameObject* m_pVisuals{};
 
-	Character* m_pMario{ };
+	Mario* m_pMario{ };
 
 	float m_Lifetime{ 3.f };
 	float m_MoveSpeed{ 75.f };

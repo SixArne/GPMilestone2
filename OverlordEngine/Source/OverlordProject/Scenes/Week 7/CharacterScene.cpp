@@ -15,20 +15,7 @@ void CharacterScene::Initialize()
 	const auto pDefaultMaterial = PxGetPhysics().createMaterial(0.5f, 0.5f, 0.5f);
 	GameSceneExt::CreatePhysXGroundPlane(*this, pDefaultMaterial);
 
-	//Character
-	CharacterDesc characterDesc{ pDefaultMaterial };
-	characterDesc.actionId_MoveForward = CharacterMoveForward;
-	characterDesc.actionId_MoveBackward = CharacterMoveBackward;
-	characterDesc.actionId_MoveLeft = CharacterMoveLeft;
-	characterDesc.actionId_MoveRight = CharacterMoveRight;
-	characterDesc.actionId_Jump = CharacterJump;
-	characterDesc.controller.height = 1.f;
-	characterDesc.controller.radius = 0.5f;
-	characterDesc.JumpSpeed = 80.f;
 
-	m_pCharacter = AddChild(new Character(characterDesc, nullptr));
-	m_pCharacter->GetTransform()->Scale(1, 1, 1);
-	m_pCharacter->GetTransform()->Translate(0, 10, 0);
 
 	//Simple Level
 	const auto pLevelObject = AddChild(new GameObject());

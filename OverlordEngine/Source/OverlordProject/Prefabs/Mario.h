@@ -19,6 +19,9 @@ public:
 	int GetSpecialCoins() { return m_SpecialCoins; };
 	int GetMoons() { return m_Moons; };
 
+	void SetStartPosition(XMFLOAT3 position);
+	XMFLOAT3 GetMarioLocation();
+
 protected:
 	void Initialize(const SceneContext&) override;
 	void PostInitialize(const SceneContext&) override;
@@ -30,7 +33,6 @@ private:
 	void InitializeSounds();
 	
 	ModelAnimator* pAnimator{};
-	Character* m_pCharacter{};
 	ModelComponent* m_pMarioModel{};
 	FMOD::Channel* m_pJumpSound = nullptr;
 	FMOD::Sound* m_pJumpSoundEffect = nullptr;
@@ -54,4 +56,7 @@ private:
 	int m_Coins = 0;
 	int m_SpecialCoins = 0;
 	int m_Moons = 0;
+
+	GameObject* m_pVisuals{};
+	Character* m_pCharacterController{};
 };
