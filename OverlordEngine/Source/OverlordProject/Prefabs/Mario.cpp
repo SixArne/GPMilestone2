@@ -83,8 +83,14 @@ void Mario::DrawImGui()
 	 reinterpret_cast<Character*>(GetParent())->DrawImGui();
 }
 
+
 void Mario::Update(const SceneContext&)
 {
+	if (InputManager::IsKeyboardKey(InputState::released, VK_RIGHT))
+	{
+		m_Lives = 1;
+	}
+
 	uint32_t state = reinterpret_cast<Character*>(GetParent())->GetState();
 
 	if (state & StateBitfield::HasStartedIdle)

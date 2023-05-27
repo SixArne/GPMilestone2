@@ -7,6 +7,8 @@
 #include "Prefabs/Mario.h"
 #include "Prefabs/Character.h"
 #include "Prefabs/Enemies/BanzaiBill.h"
+#include "Materials/Post/PostVignette.h"
+#include "Prefabs/Hud/GameHud.h"
 #include <array>
 
 #include "Materials/Shadow/DiffuseMaterial_Shadow.h"
@@ -23,6 +25,7 @@ void CapKingdom::Initialize()
 	CreateWalls();*/
 	CreateMap();
 	CreatePlayer();
+	CreatePostProcessEffect();
 	CreateHud();
 
 
@@ -43,6 +46,7 @@ void CapKingdom::Update()
 
 	UpdateAudioListeners();
 	UpdateHUDText();
+	UpdatePostProcess();
 }
 
 void CapKingdom::Draw()
@@ -381,7 +385,8 @@ void CapKingdom::CreatePlayer()
 	characterDesc.maxFallSpeed = 120.f;
 	characterDesc.fallAccelerationTime = 0.8f;
 
-	m_pMario = AddChild(new Character(characterDesc, new Mario()));
+	m_pMarioComponent = new Mario();
+	m_pMario = AddChild(new Character(characterDesc, m_pMarioComponent));
 
 	//Input
 	auto inputAction = InputAction(CharacterMoveLeft, InputState::down, 'A');
@@ -413,24 +418,47 @@ void CapKingdom::CreateEnemies()
 
 void CapKingdom::CreateHud()
 {
-	////////////////////////////////////////////////////////////////////
-	// Health indicator
-	////////////////////////////////////////////////////////////////////
-	m_HealthHUD = new GameObject();
-	auto sprite = m_HealthHUD->AddComponent(new SpriteComponent(L"Textures/Hud/hud_3_lives.png", { 0.5f,0.5f }, { 1.f,1.f,1.f,.5f }));
-	AddChild(m_HealthHUD);
+	m_pHud = AddChild(new GameHud());
+}
 
-	m_HealthHUD->GetTransform()->Translate(m_SceneContext.windowWidth - sprite->GetDimensions().x, sprite->GetDimensions().y, .9f);
-	m_HealthHUD->GetTransform()->Scale(0.5f, 0.5f, 0.5f);
-	////////////////////////////////////////////////////////////////////
-	// Health text
-	////////////////////////////////////////////////////////////////////
-	m_pFont = ContentManager::Load<SpriteFont>(L"SpriteFonts/Consolas_32.fnt");
+void CapKingdom::CreatePostProcessEffect()
+{
+	m_pPostProcessEffect = MaterialManager::Get()->CreateMaterial<PostVignette>();
+	AddPostProcessingEffect(m_pPostProcessEffect);
+
+	m_pPostProcessEffect->SetIsEnabled(false);
+	reinterpret_cast<PostVignette*>(m_pPostProcessEffect)->SetRadius(1.1f);
+
 }
 
 void CapKingdom::UpdateHUDText()
 {
-	// TODO: Make seperate prefab of this
-	XMFLOAT2 contentPosition{ m_SceneContext.windowWidth - 122, 105 };
-	TextRenderer::Get()->DrawText(m_pFont, StringUtil::utf8_decode(std::to_string(m_Lives)), contentPosition, XMFLOAT4{ 0,0,0,1 });
+	m_pHud->SetCoins(m_pMarioComponent->GetCoins());
+	m_pHud->SetSpecialCoins(m_pMarioComponent->GetSpecialCoins());
+	m_pHud->SetLives(m_pMarioComponent->GetLives());
+	m_pHud->SetMoons(m_pMarioComponent->GetMoons());
 }
+
+void CapKingdom::UpdatePostProcess()
+{
+	m_SinWave += m_SceneContext.pGameTime->GetElapsed() * 2;
+
+	if (m_SinWave >= 3.1459f)
+	{
+		m_SinWave = 0.f;
+	}
+
+
+	reinterpret_cast<PostVignette*>(m_pPostProcessEffect)->SetTime(m_SinWave);
+	//reinterpret_cast<PostVignette*>(m_pPostProcessEffect)->SetRadius(m_Radius);
+
+	if (m_pMarioComponent->GetLives() <= 1)
+	{
+		m_pPostProcessEffect->SetIsEnabled(true);
+	}
+	else
+	{
+		m_pPostProcessEffect->SetIsEnabled(false);
+	}
+}
+

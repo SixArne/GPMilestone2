@@ -2,6 +2,8 @@
 class Character;
 class Mario;
 class BanzaiBill;
+class GameHud;
+class Mario;
 
 class CapKingdom :
     public GameScene
@@ -46,10 +48,18 @@ private:
 	void CreatePlayer();
 	void CreateEnemies();
 	void CreateHud();
+	void CreatePostProcessEffect();
 
 	void UpdateHUDText();
+	void UpdatePostProcess();
 
 	Character* m_pMario{};
+	Mario* m_pMarioComponent{};
+
+	float m_SinWave{};
+	const float m_RadiusMinValue{0.8f};
+	float m_Radius{m_RadiusMinValue};
+
 
 	enum InputIds
 	{
@@ -64,11 +74,14 @@ private:
 	bool m_DrawShadowMap{ false };
 	bool m_HasStartedLevel{ false };
 
+	PostProcessingMaterial* m_pPostProcessEffect{};
+
 	float m_ShadowMapScale{ 0.3f };
 	XMFLOAT3 m_LightDirection{ -0.577f, -0.577f, 0.577f };
 	FMOD_VECTOR m_PrevListenerPosition{};
 
 	GameObject* m_HealthHUD{};
+	GameHud* m_pHud{};
 	SpriteFont* m_pFont{};
 
 	int m_Lives{3};

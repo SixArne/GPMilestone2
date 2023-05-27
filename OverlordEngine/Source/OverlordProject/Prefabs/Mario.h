@@ -14,6 +14,11 @@ public:
 
 	void DrawImGui();
 
+	int GetLives() { return m_Lives;  };
+	int GetCoins() { return m_Coins;  };
+	int GetSpecialCoins() { return m_SpecialCoins; };
+	int GetMoons() { return m_Moons; };
+
 protected:
 	void Initialize(const SceneContext&) override;
 	void PostInitialize(const SceneContext&) override;
@@ -42,4 +47,9 @@ private:
 		CharacterMoveBackward,
 		CharacterJump
 	};
+
+	int m_Lives = 3;
+	int m_Coins = 0;
+	int m_SpecialCoins = 0;
+	int m_Moons = 0;
 };
