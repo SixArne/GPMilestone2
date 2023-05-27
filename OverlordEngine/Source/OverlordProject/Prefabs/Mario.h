@@ -25,6 +25,8 @@ protected:
 	void Update(const SceneContext&) override;
 
 private:
+
+	void OnCollision(GameObject* pTriggerObject, GameObject* pOtherObject, PxTriggerAction action);
 	void InitializeSounds();
 	
 	ModelAnimator* pAnimator{};
@@ -48,7 +50,7 @@ private:
 		CharacterJump
 	};
 
-	int m_Lives = 3;
+	int m_Lives = 4;
 	int m_Coins = 0;
 	int m_SpecialCoins = 0;
 	int m_Moons = 0;

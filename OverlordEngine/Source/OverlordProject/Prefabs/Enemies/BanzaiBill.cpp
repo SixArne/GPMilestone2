@@ -43,11 +43,18 @@ void BanzaiBill::Initialize(const SceneContext&)
 	auto colliderId = m_pRigidBody->AddCollider(PxCapsuleGeometry{ 5, 1 }, *pDefaultMat);
 	m_pRigidBody->SetKinematic(true);
 
-	m_pRigidBody->GetCollider(colliderId).GetShape()->setFlag(PxShapeFlag::eSIMULATION_SHAPE, false);
-	m_pRigidBody->GetCollider(colliderId).GetShape()->setFlag(PxShapeFlag::eTRIGGER_SHAPE, true);
+	auto colliderInfo = m_pRigidBody->GetCollider(colliderId);
+	colliderInfo.SetTrigger(true);
+
+	this->SetOnTriggerCallBack([=](GameObject* /*pTrigger*/, GameObject* /*pOther*/, PxTriggerAction /*action*/)
+		{
+			
+		});
 
 	m_pParticles->GetTransform()->Translate(0, 0, -10);
 	GetTransform()->Rotate(0, 0, 0);
+
+	SetTag(L"bill");
 }
 
 void BanzaiBill::PostInitialize(const SceneContext&)

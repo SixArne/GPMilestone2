@@ -39,7 +39,7 @@ private:
 	Character* m_pMario{ };
 
 	float m_Lifetime{ 3.f };
-	float m_MoveSpeed{ 150.f };
+	float m_MoveSpeed{ 75.f };
 	float m_MaxDetectRadius{ 300.f };
 };
 

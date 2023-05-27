@@ -387,6 +387,7 @@ void CapKingdom::CreatePlayer()
 
 	m_pMarioComponent = new Mario();
 	m_pMario = AddChild(new Character(characterDesc, m_pMarioComponent));
+	m_pMario->SetTag(L"mario");
 
 	//Input
 	auto inputAction = InputAction(CharacterMoveLeft, InputState::down, 'A');
@@ -405,7 +406,7 @@ void CapKingdom::CreatePlayer()
 	m_SceneContext.pInput->AddInputAction(inputAction);
 
 	m_pMario->GetTransform()->Scale(4, 4, 4);
-	m_pMario->GetTransform()->Translate(100, 0, 5);
+	m_pMario->GetTransform()->Translate(-550, 0, -553);
 }
 
 void CapKingdom::CreateEnemies()

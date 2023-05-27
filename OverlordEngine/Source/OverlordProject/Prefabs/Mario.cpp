@@ -15,9 +15,24 @@ void Mario::Initialize(const SceneContext&)
 	auto marioObject = AddChild(new GameObject());
 	m_pMarioModel = marioObject->AddComponent(new ModelComponent(L"Meshes/mario.ovm"));
 
-	marioObject->GetTransform()->Translate(0.f, -1.5f, 0.f);
 
-	//const auto pDefaultMaterial = PxGetPhysics().createMaterial(0.5f, 0.5f, 0.5f);
+	/////////////////////////////////////////////////////////////////////////
+	//							Collision detection
+	//////////////////////////////////////////////////////////////////////////
+	auto rigidBody = marioObject->AddComponent(new RigidBodyComponent());
+	auto pDefaultMat = PxGetPhysics().createMaterial(0.5f, 0.5f, 0.8f);
+	auto colliderId = rigidBody->AddCollider(PxCapsuleGeometry{ 2.f, 5.f }, *pDefaultMat);
+	rigidBody->SetKinematic(true);
+
+	auto colliderInfo = rigidBody->GetCollider(colliderId);
+	colliderInfo.SetTrigger(true);
+
+	this->SetOnTriggerCallBack([=](GameObject* pTrigger, GameObject* pOther, PxTriggerAction action)
+		{
+			OnCollision(pTrigger, pOther, action);
+		});
+
+	marioObject->GetTransform()->Translate(0.f, -1.5f, 0.f);
 
 	//////////////////////////////////////////////////////////////////////////
 	//							Mario model and textures.
@@ -110,6 +125,31 @@ void Mario::Update(const SceneContext&)
 	{
 		pAnimator->SetAnimation(L"Run");
 		pAnimator->Play();
+	}
+}
+
+void Mario::OnCollision(GameObject* /*pTriggerObject*/, GameObject* pOtherObject, PxTriggerAction action)
+{
+	if (action == PxTriggerAction::ENTER)
+	{
+		if (pOtherObject->GetTag() == L"bill")
+		{
+			m_Lives--;
+			std::cout << "hit" << std::endl;
+			std::cout << "lives left: " << m_Lives << std::endl;
+		}
+		else if (pOtherObject->GetTag() == L"coin")
+		{
+			std::cout << "got coin" << std::endl;
+		}
+		else if (pOtherObject->GetTag() == L"specialCoin")
+		{
+			std::cout << "got special coin" << std::endl;
+		}
+		else if (pOtherObject->GetTag() == L"moon")
+		{
+			std::cout << "got moon" << std::endl;
+		}
 	}
 }
 
