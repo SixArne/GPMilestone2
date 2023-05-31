@@ -328,3 +328,24 @@ uint32_t Character::GetState()
 {
 	return m_State;
 }
+
+void Character::SetVisuals(GameObject* visuals)
+{
+	AddChild(visuals);
+	m_pVisuals = visuals;
+}
+
+void Character::SetOwningPrefab(GameObject* prefab)
+{
+	m_pOwningPrefab = prefab;
+}
+
+GameObject* Character::GetOwningPrefab()
+{
+	return m_pOwningPrefab;
+}
+
+GameObject* Character::GetVisuals()
+{
+	return m_pVisuals;
+}

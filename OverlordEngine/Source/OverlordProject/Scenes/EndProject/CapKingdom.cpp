@@ -116,6 +116,12 @@ void CapKingdom::InitSound()
 	m_pChannel3D->set3DMinMaxDistance(1.f, 200.f);
 }
 
+void CapKingdom::OnGameOver()
+{
+	SceneManager::Get()->PreviousScene();
+	std::cout << "Mario has died" << std::endl;
+}
+
 inline FMOD_VECTOR ToFMod(XMFLOAT3 v)
 {
 	return FMOD_VECTOR{ v.x, v.y, v.z };
@@ -384,15 +390,25 @@ void CapKingdom::CreateBridge()
 void CapKingdom::CreatePlayer()
 {
 	m_pMarioComponent = AddChild(new Mario());
-	m_pMarioComponent->SetTag(L"mario");
+	m_pMarioComponent->SetLives(4);
 
 	m_pMarioComponent->SetStartPosition(XMFLOAT3{ -550, 0, -553 });
+
+	m_pMarioComponent->SetOnDieCallback([this]() 
+		{
+			OnGameOver();
+		});
 }
 
 void CapKingdom::CreateEnemies()
 {
 	auto bill = AddChild(new BanzaiBill(m_pMarioComponent));
 	bill->GetTransform()->Translate(0, 2, 0);
+	bill->SetOnDeathCallback([this, bill]() {
+		// Remove from m_Bills
+		auto it = std::find(begin(m_Bills), end(m_Bills), bill);
+		m_Bills.erase(it);
+	});
 
 	m_Bills.push_back(bill);
 }
@@ -414,9 +430,14 @@ void CapKingdom::CreatePostProcessEffect()
 
 void CapKingdom::UpdateHUDText()
 {
-	m_pHud->SetCoins(m_pMarioComponent->GetCoins());
+	int coins = m_pMarioComponent->GetCoins();
+	m_pHud->SetCoins(coins);
+
 	m_pHud->SetSpecialCoins(m_pMarioComponent->GetSpecialCoins());
-	m_pHud->SetLives(m_pMarioComponent->GetLives());
+
+	int lives = m_pMarioComponent->GetLives();
+	m_pHud->SetLives(lives);
+
 	m_pHud->SetMoons(m_pMarioComponent->GetMoons());
 }
 

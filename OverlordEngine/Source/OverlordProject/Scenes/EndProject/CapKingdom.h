@@ -39,6 +39,8 @@ private:
 
 	void InitSound();
 
+	void OnGameOver();
+
 	void UpdateAudioListeners();
 
 	void CreateMap();

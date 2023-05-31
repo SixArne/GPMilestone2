@@ -59,6 +59,10 @@ public:
 	uint32_t GetState();
 
 	XMFLOAT3 GetCurrentDirection() { return m_CurrentDirection; };
+	void SetVisuals(GameObject* visuals);
+	void SetOwningPrefab(GameObject* prefab);
+	GameObject* GetOwningPrefab();
+	GameObject* GetVisuals();
 
 protected:
 	void Initialize(const SceneContext&) override;
@@ -68,6 +72,7 @@ private:
 	CameraComponent* m_pCameraComponent{};
 	ControllerComponent* m_pControllerComponent{};
 	GameObject* m_pVisuals{};
+	GameObject* m_pOwningPrefab{};
 	GameObject* m_pCameraBoom{};
 	
 

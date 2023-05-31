@@ -2,13 +2,18 @@
 #include "BanzaiBill.h"
 #include "Materials/Shadow/DiffuseMaterial_Shadow.h"
 #include "Prefabs/Mario.h"
+#include "Prefabs/Character.h"
 
 BanzaiBill::BanzaiBill(Mario* mario)
 	:m_pMario{mario}
 {
 }
 
-void BanzaiBill::Initialize(const SceneContext&)
+BanzaiBill::~BanzaiBill()
+{
+}
+
+void BanzaiBill::Initialize([[maybe_unused]]const SceneContext& sceneContext)
 {
 	m_pVisuals = AddChild(new GameObject());
 	m_pParticles = m_pVisuals->AddChild(new GameObject());
@@ -41,20 +46,14 @@ void BanzaiBill::Initialize(const SceneContext&)
 	m_pEmitter = m_pParticles->AddComponent(new ParticleEmitterComponent(L"Textures/Smoke.png", settings, 200));
 	m_pRigidBody = AddComponent(new RigidBodyComponent());
 	auto colliderId = m_pRigidBody->AddCollider(PxCapsuleGeometry{ 5, 1 }, *pDefaultMat);
-	m_pRigidBody->SetKinematic(true);
+	//m_pRigidBody->SetKinematic(true);
 
 	auto colliderInfo = m_pRigidBody->GetCollider(colliderId);
 	colliderInfo.SetTrigger(true);
 
-	this->SetOnTriggerCallBack([=](GameObject* /*pTrigger*/, GameObject* pOther, PxTriggerAction action)
+	this->SetOnTriggerCallBack([=](GameObject* pTrigger, GameObject* pOther, PxTriggerAction action)
 		{
-			if (action == PxTriggerAction::ENTER)
-			{
-				if (pOther->GetTag() == L"mario")
-				{
-					std::cout << "Triggered bill" << std::endl;
-				}
-			}
+			OnCollision(pTrigger, pOther, action);
 		});
 
 	m_pParticles->GetTransform()->Translate(0, 0, -10);
@@ -74,6 +73,40 @@ void BanzaiBill::Update(const SceneContext& ctx)
 		MoveTowardsMario(ctx.pGameTime->GetElapsed());
 		RotateTowardsMario();
 	}
+
+	if (m_MarkedForDestruction)
+	{
+		// Let scene clean up references
+		m_OnDeathCallback();
+
+		m_pRigidBody->PutToSleep();
+
+		GetScene()->RemoveChild(this, true);
+	}
+}
+
+void BanzaiBill::OnCollision(GameObject* /*pTrigger*/, GameObject* pOther, PxTriggerAction action)
+{
+	if (!m_HasCallbackTriggered)
+	{
+		m_HasCallbackTriggered = true;
+		return;
+	}
+
+	if (action == PxTriggerAction::ENTER)
+	{
+		if (pOther->GetTag() == L"mario")
+		{
+
+			Character* character = reinterpret_cast<Character*>(pOther);
+			Mario* mario = reinterpret_cast<Mario*>(character->GetOwningPrefab());
+			mario->TakeDamage();
+
+			m_MarkedForDestruction = true;
+		}
+	}
+
+	
 }
 
 void BanzaiBill::InitializeSounds()

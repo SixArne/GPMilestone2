@@ -5,6 +5,45 @@
 #include "Prefabs/Character.h"
 
 
+void Mario::TakeDamage()
+{
+	std::cout << "Mario Lives left: " << m_Lives << std::endl;
+
+	--m_Lives;
+	m_Lives = std::clamp(m_Lives, 0, 4);
+
+	if (m_Lives > 1)
+	{
+		SoundManager::Get()->GetSystem()->playSound(m_pDamageSoundEffect, nullptr, false, &m_pHealthChannel);
+	}
+	else if (m_Lives == 1)
+	{
+		SoundManager::Get()->GetSystem()->playSound(m_pLastLifeSoundEffect, nullptr, false, &m_pHealthChannel);
+	}
+	else
+	{
+		SoundManager::Get()->GetSystem()->playSound(m_pDeathSoundEffect, nullptr, false, &m_pHealthChannel);
+		m_OnDieCallback();
+	}
+
+	std::cout << "Mario took damage! Lives left: " << m_Lives << std::endl;
+}
+
+void Mario::TakeMoon()
+{
+	m_Moons++;
+}
+
+void Mario::TakeCoin()
+{
+	m_Coins++;
+}
+
+void Mario::TakeSpecialCoin()
+{
+	m_SpecialCoins++;
+}
+
 void Mario::SetStartPosition(XMFLOAT3 position)
 {
 	m_pCharacterController->GetTransform()->Translate(position);
@@ -17,7 +56,7 @@ XMFLOAT3 Mario::GetMarioLocation()
 
 void Mario::Initialize(const SceneContext& /*sceneContext*/)
 {
-
+	m_Lives = 4;
 
 	//////////////////////////////////////////////////////////////////////////
 	//							Character Controller.
@@ -45,9 +84,10 @@ void Mario::Initialize(const SceneContext& /*sceneContext*/)
 	characterDesc.maxFallSpeed = 120.f;
 	characterDesc.fallAccelerationTime = 0.8f;
 	m_pCharacterController = AddChild(new Character(characterDesc));
-	m_pCharacterController->AddChild(m_pVisuals);
-
+	m_pCharacterController->SetVisuals(m_pVisuals);
+	m_pCharacterController->SetOwningPrefab(this);
 	m_pCharacterController->SetTag(L"mario");
+
 	m_pCharacterController->SetOnTriggerCallBack([=](GameObject* /*pTrigger*/, GameObject* /*pOther*/, PxTriggerAction /*action*/)
 		{
 			std::cout << "Triggered mario2" << std::endl;
@@ -127,9 +167,34 @@ void Mario::PostInitialize(const SceneContext&)
 	pAnimator->Play();
 }
 
+Mario::Mario()
+{
+	std::cout << "constructing mario" << std::endl;
+}
+
 void Mario::DrawImGui()
 {
 	 //reinterpret_cast<Character*>(GetParent())->DrawImGui();
+}
+
+int Mario::GetLives()
+{
+	return m_Lives;
+}
+
+int Mario::GetCoins()
+{
+	return m_Coins;
+}
+
+int Mario::GetSpecialCoins()
+{
+	return m_SpecialCoins;
+}
+
+int Mario::GetMoons()
+{
+	return m_Moons;
 }
 
 
@@ -166,9 +231,9 @@ void Mario::Update(const SceneContext&)
 	}
 }
 
-void Mario::OnCollision(GameObject* /*pTriggerObject*/, GameObject* pOtherObject, PxTriggerAction action)
+void Mario::OnCollision(GameObject* /*pTriggerObject*/, GameObject* /*pOtherObject*/, PxTriggerAction /*action*/)
 {
-	if (action == PxTriggerAction::ENTER)
+	/*if (action == PxTriggerAction::ENTER)
 	{
 		if (pOtherObject->GetTag() == L"bill")
 		{
@@ -188,7 +253,7 @@ void Mario::OnCollision(GameObject* /*pTriggerObject*/, GameObject* pOtherObject
 		{
 			std::cout << "got moon" << std::endl;
 		}
-	}
+	}*/
 }
 
 void Mario::InitializeSounds()
@@ -199,6 +264,30 @@ void Mario::InitializeSounds()
 		SoundManager::Get()->GetSystem()->createStream("Resources/Sound/jump.mp3", FMOD_DEFAULT, nullptr, &m_pJumpSoundEffect);
 		m_pJumpSoundEffect->setMode(FMOD_LOOP_OFF);
 		m_pJumpSoundEffect->set3DMinMaxDistance(0.f, 100.f);
+	}
+
+	if (!m_pDamageSoundEffect)
+	{
+
+		SoundManager::Get()->GetSystem()->createStream("Resources/Sound/damage.mp3", FMOD_DEFAULT, nullptr, &m_pDamageSoundEffect);
+		m_pDamageSoundEffect->setMode(FMOD_LOOP_OFF);
+		m_pDamageSoundEffect->set3DMinMaxDistance(0.f, 100.f);
+	}
+
+	if (!m_pLastLifeSoundEffect)
+	{
+
+		SoundManager::Get()->GetSystem()->createStream("Resources/Sound/last_life.mp3", FMOD_DEFAULT, nullptr, &m_pLastLifeSoundEffect);
+		m_pLastLifeSoundEffect->setMode(FMOD_LOOP_OFF);
+		m_pLastLifeSoundEffect->set3DMinMaxDistance(0.f, 100.f);
+	}
+
+	if (!m_pDeathSoundEffect)
+	{
+
+		SoundManager::Get()->GetSystem()->createStream("Resources/Sound/die.mp3", FMOD_DEFAULT, nullptr, &m_pDeathSoundEffect);
+		m_pDeathSoundEffect->setMode(FMOD_LOOP_OFF);
+		m_pDeathSoundEffect->set3DMinMaxDistance(0.f, 100.f);
 	}
 
 	SoundManager::Get()->GetSystem()->playSound(m_pJumpSoundEffect, nullptr, true, &m_pJumpSound);
