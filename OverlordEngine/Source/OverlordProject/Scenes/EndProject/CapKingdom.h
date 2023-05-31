@@ -5,13 +5,16 @@ class BanzaiBill;
 class GameHud;
 class Mario;
 
+#include "Utils/LocationWriter.h"
+
+
 class CapKingdom :
     public GameScene
 {
 public:
 	CapKingdom() : GameScene(L"CapkingdomScene") {}
 
-	~CapKingdom() override = default;
+	~CapKingdom() override;
 	CapKingdom(const CapKingdom& other) = delete;
 	CapKingdom(CapKingdom&& other) noexcept = delete;
 	CapKingdom& operator=(const CapKingdom& other) = delete;
@@ -51,6 +54,13 @@ private:
 	void CreateEnemies();
 	void CreateHud();
 	void CreatePostProcessEffect();
+	void CreateCollectibles();
+
+#ifdef _DEBUG
+	void CreateLocationWriter();
+#endif // DEBUG
+	void CreateLocationReader();
+
 
 	void UpdateHUDText();
 	void UpdatePostProcess();
@@ -81,9 +91,14 @@ private:
 	XMFLOAT3 m_LightDirection{ -0.577f, -0.577f, 0.577f };
 	FMOD_VECTOR m_PrevListenerPosition{};
 
-	GameObject* m_HealthHUD{};
 	GameHud* m_pHud{};
-	SpriteFont* m_pFont{};
+
+	GameObject* m_dCoin{};
 
 	int m_Lives{3};
+
+#ifdef _DEBUG
+	LocationWriter m_LocationWriter;
+#endif // DEBUG
+	LocationReader m_LocationReader;
 };

@@ -9,12 +9,22 @@
 #include "Prefabs/Enemies/BanzaiBill.h"
 #include "Materials/Post/PostVignette.h"
 #include "Prefabs/Hud/GameHud.h"
+#include <Utils/TimerManager.h>
+#include "Utils/LocationWriter.h"
+#include "Prefabs/Collectibles/Coin.h"
 #include <array>
 
 #include "Materials/Shadow/DiffuseMaterial_Shadow.h"
 
+CapKingdom::~CapKingdom()
+{
+	TimerManager::Destroy();
+}
+
 void CapKingdom::Initialize()
 {
+	TimerManager::Create();
+
 	auto inputAction = InputAction(CharacterMoveLeft, InputState::down, 'A');
 	m_SceneContext.pInput->AddInputAction(inputAction);
 
@@ -45,14 +55,36 @@ void CapKingdom::Initialize()
 	CreateHud();
 
 
+
+#ifdef _DEBUG
+	CreateLocationWriter();
+#endif // _DEBUG
+	CreateLocationReader();
+	CreateCollectibles();
+
+
 	CreateEnemies();
 
 	m_SceneContext.pLights->SetDirectionalLight({ -95.6139526f,66.1346436f,-41.1850471f }, { 0.740129888f, -0.597205281f, 0.309117377f });
 	m_SceneContext.pInput->AddInputAction(InputAction(0, InputState::pressed, VK_DELETE));
+
+#ifdef _DEBUG
+	inputAction = InputAction(100, InputState::pressed, VK_SPACE, -1, XINPUT_GAMEPAD_B);
+	m_SceneContext.pInput->AddInputAction(inputAction);
+#endif // _DEBUG
 }
 
 void CapKingdom::Update()
 {
+#ifdef _DEBUG
+	if (m_SceneContext.pInput->IsActionTriggered(100))
+	{
+		std::cout << "writing location data" << std::endl;
+		m_LocationWriter.WriteLocation(m_pMarioComponent->GetCharacterController()->GetTransform()->GetWorldPosition());
+	}
+#endif // _DEBUG
+
+
 
 	if (!m_HasStartedLevel)
 	{
@@ -63,6 +95,7 @@ void CapKingdom::Update()
 	UpdateAudioListeners();
 	UpdateHUDText();
 	UpdatePostProcess();
+	TimerManager::Get()->Update(m_SceneContext.pGameTime->GetElapsed());
 }
 
 void CapKingdom::Draw()
@@ -118,8 +151,12 @@ void CapKingdom::InitSound()
 
 void CapKingdom::OnGameOver()
 {
-	SceneManager::Get()->PreviousScene();
-	std::cout << "Mario has died" << std::endl;
+	std::cout << "Timer started" << std::endl;
+	TimerManager::Get()->CreateTimer(2.5f, []() {
+		std::cout << "Mario has died" << std::endl;
+
+		SceneManager::Get()->PreviousScene();
+	});
 }
 
 inline FMOD_VECTOR ToFMod(XMFLOAT3 v)
@@ -390,7 +427,7 @@ void CapKingdom::CreateBridge()
 void CapKingdom::CreatePlayer()
 {
 	m_pMarioComponent = AddChild(new Mario());
-	m_pMarioComponent->SetLives(4);
+	m_pMarioComponent->SetLives(3);
 
 	m_pMarioComponent->SetStartPosition(XMFLOAT3{ -550, 0, -553 });
 
@@ -402,15 +439,19 @@ void CapKingdom::CreatePlayer()
 
 void CapKingdom::CreateEnemies()
 {
-	auto bill = AddChild(new BanzaiBill(m_pMarioComponent));
-	bill->GetTransform()->Translate(0, 2, 0);
-	bill->SetOnDeathCallback([this, bill]() {
-		// Remove from m_Bills
-		auto it = std::find(begin(m_Bills), end(m_Bills), bill);
-		m_Bills.erase(it);
-	});
+	//for (int i{}; i < 3; i++)
+	//{
+	//	auto bill = AddChild(new BanzaiBill(m_pMarioComponent));
+	//	bill->GetTransform()->Translate((float)i * 400, 2, 0);
 
-	m_Bills.push_back(bill);
+	//	bill->SetOnDeathCallback([this, bill]() {
+	//		// Remove from m_Bills
+	//		auto it = std::find(begin(m_Bills), end(m_Bills), bill);
+	//		m_Bills.erase(it);
+	//		});
+
+	//	m_Bills.push_back(bill);
+	//}
 }
 
 void CapKingdom::CreateHud()
@@ -426,6 +467,29 @@ void CapKingdom::CreatePostProcessEffect()
 	m_pPostProcessEffect->SetIsEnabled(false);
 	reinterpret_cast<PostVignette*>(m_pPostProcessEffect)->SetRadius(1.1f);
 
+}
+
+void CapKingdom::CreateCollectibles()
+{
+	auto locations = m_LocationReader.ReadLocations();
+
+	for (auto loc : locations)
+	{
+		auto coin = AddChild(new Coin());
+		coin->GetTransform()->Translate(loc.x, loc.y + 1, loc.z);
+	}
+}
+
+#ifdef _DEBUG
+void CapKingdom::CreateLocationWriter()
+{
+	m_LocationWriter = LocationWriter("data.txt");
+}
+#endif
+
+void CapKingdom::CreateLocationReader()
+{
+	m_LocationReader = LocationReader("data.txt");
 }
 
 void CapKingdom::UpdateHUDText()

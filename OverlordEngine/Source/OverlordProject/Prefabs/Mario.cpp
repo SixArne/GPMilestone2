@@ -7,22 +7,51 @@
 
 void Mario::TakeDamage()
 {
+	if (m_IsDead) return;
+
 	std::cout << "Mario Lives left: " << m_Lives << std::endl;
 
 	--m_Lives;
 	m_Lives = std::clamp(m_Lives, 0, 4);
 
+	if (m_Lives >= 1)
+	{
+		m_IsHurt = true;
+	}
+
 	if (m_Lives > 1)
 	{
-		SoundManager::Get()->GetSystem()->playSound(m_pDamageSoundEffect, nullptr, false, &m_pHealthChannel);
+		FMOD::Channel* channel = NULL;
+		SoundManager::Get()->GetSystem()->playSound(m_pDamageSoundEffect, nullptr, false, &channel);
+		if (channel != nullptr)
+		{
+			channel->setVolume(0.5f);
+		}
+
 	}
 	else if (m_Lives == 1)
 	{
-		SoundManager::Get()->GetSystem()->playSound(m_pLastLifeSoundEffect, nullptr, false, &m_pHealthChannel);
+		FMOD::Channel* channel = NULL;
+		SoundManager::Get()->GetSystem()->playSound(m_pLastLifeSoundEffect, nullptr, false, &channel);
+		if (channel != nullptr)
+		{
+			channel->setVolume(0.5f);
+		}
+
 	}
-	else
+	else if (m_Lives == 0)
 	{
-		SoundManager::Get()->GetSystem()->playSound(m_pDeathSoundEffect, nullptr, false, &m_pHealthChannel);
+		FMOD::Channel* channel = NULL;
+		SoundManager::Get()->GetSystem()->playSound(m_pDeathSoundEffect, nullptr, false, &channel);
+
+		if (channel != nullptr)
+		{
+			channel->setVolume(0.5f);
+		}
+
+
+		m_IsDead = true;
+		m_HasRecentlyDied = true;
 		m_OnDieCallback();
 	}
 
@@ -37,6 +66,13 @@ void Mario::TakeMoon()
 void Mario::TakeCoin()
 {
 	m_Coins++;
+
+	FMOD::Channel* channel = NULL;
+	SoundManager::Get()->GetSystem()->playSound(m_pCoinSoundEffect, nullptr, false, &channel);
+	if (channel)
+	{
+		channel->setVolume(0.1f);
+	}
 }
 
 void Mario::TakeSpecialCoin()
@@ -54,10 +90,13 @@ XMFLOAT3 Mario::GetMarioLocation()
 	return m_pCharacterController->GetTransform()->GetWorldPosition();
 }
 
+Character* Mario::GetCharacterController()
+{
+	return m_pCharacterController;
+}
+
 void Mario::Initialize(const SceneContext& /*sceneContext*/)
 {
-	m_Lives = 4;
-
 	//////////////////////////////////////////////////////////////////////////
 	//							Character Controller.
 	//////////////////////////////////////////////////////////////////////////
@@ -198,8 +237,10 @@ int Mario::GetMoons()
 }
 
 
-void Mario::Update(const SceneContext&)
+void Mario::Update(const SceneContext& sceneContext)
 {
+	if (m_IsDead && !m_HasRecentlyDied) return;
+
 	////////////////////////////////////////////////////////////
 	//						Visual rotation
 	////////////////////////////////////////////////////////////
@@ -211,10 +252,39 @@ void Mario::Update(const SceneContext&)
 
 	uint32_t state = reinterpret_cast<Character*>(m_pCharacterController)->GetState();
 
-	if (state & StateBitfield::HasStartedIdle)
+	if (m_HasInvincibilityFrames)
+	{
+		m_InvincibilityTimer += sceneContext.pGameTime->GetElapsed();
+
+		if (m_InvincibilityTimer >= m_InvincibilityTime)
+		{
+			m_HasInvincibilityFrames = false;
+			m_WasHurt = true;
+			m_InvincibilityTimer = 0.f;
+		}
+	}
+
+	if (m_IsHurt)
+	{
+		pAnimator->SetAnimation(L"Hurt");
+		pAnimator->Play();
+
+		m_IsHurt = false;
+		m_HasInvincibilityFrames = true;
+	}
+	else if (m_Lives == 0 && m_HasRecentlyDied)
+	{
+		pAnimator->SetAnimation(L"Death");
+		pAnimator->Play();
+
+		m_HasRecentlyDied = false;
+	}
+	else if (state & StateBitfield::HasStartedIdle || m_WasHurt)
 	{
 		pAnimator->SetAnimation(L"Idle");
 		pAnimator->Play();
+
+		m_WasHurt = false;
 	}
 	else if (state & StateBitfield::HasStartedJump)
 	{
@@ -261,34 +331,42 @@ void Mario::InitializeSounds()
 	if (!m_pJumpSoundEffect)
 	{
 
-		SoundManager::Get()->GetSystem()->createStream("Resources/Sound/jump.mp3", FMOD_DEFAULT, nullptr, &m_pJumpSoundEffect);
+		SoundManager::Get()->GetSystem()->createStream("Resources/Sound/jump.wav", FMOD_DEFAULT, nullptr, &m_pJumpSoundEffect);
 		m_pJumpSoundEffect->setMode(FMOD_LOOP_OFF);
-		m_pJumpSoundEffect->set3DMinMaxDistance(0.f, 100.f);
+
 	}
 
 	if (!m_pDamageSoundEffect)
 	{
 
-		SoundManager::Get()->GetSystem()->createStream("Resources/Sound/damage.mp3", FMOD_DEFAULT, nullptr, &m_pDamageSoundEffect);
+		SoundManager::Get()->GetSystem()->createStream("Resources/Sound/damage.wav", FMOD_DEFAULT, nullptr, &m_pDamageSoundEffect);
 		m_pDamageSoundEffect->setMode(FMOD_LOOP_OFF);
-		m_pDamageSoundEffect->set3DMinMaxDistance(0.f, 100.f);
 	}
 
 	if (!m_pLastLifeSoundEffect)
 	{
 
-		SoundManager::Get()->GetSystem()->createStream("Resources/Sound/last_life.mp3", FMOD_DEFAULT, nullptr, &m_pLastLifeSoundEffect);
+		SoundManager::Get()->GetSystem()->createStream("Resources/Sound/last_life.wav", FMOD_DEFAULT, nullptr, &m_pLastLifeSoundEffect);
 		m_pLastLifeSoundEffect->setMode(FMOD_LOOP_OFF);
-		m_pLastLifeSoundEffect->set3DMinMaxDistance(0.f, 100.f);
 	}
 
 	if (!m_pDeathSoundEffect)
 	{
 
-		SoundManager::Get()->GetSystem()->createStream("Resources/Sound/die.mp3", FMOD_DEFAULT, nullptr, &m_pDeathSoundEffect);
+		SoundManager::Get()->GetSystem()->createStream("Resources/Sound/die.wav", FMOD_DEFAULT, nullptr, &m_pDeathSoundEffect);
 		m_pDeathSoundEffect->setMode(FMOD_LOOP_OFF);
-		m_pDeathSoundEffect->set3DMinMaxDistance(0.f, 100.f);
+
+
 	}
+
+	if (!m_pCoinSoundEffect)
+	{
+
+		SoundManager::Get()->GetSystem()->createStream("Resources/Sound/coin.mp3", FMOD_DEFAULT, nullptr, &m_pCoinSoundEffect);
+		m_pCoinSoundEffect->setMode(FMOD_LOOP_OFF);
+
+	}
+
 
 	SoundManager::Get()->GetSystem()->playSound(m_pJumpSoundEffect, nullptr, true, &m_pJumpSound);
 	m_pJumpSound->setVolume(0.1f);

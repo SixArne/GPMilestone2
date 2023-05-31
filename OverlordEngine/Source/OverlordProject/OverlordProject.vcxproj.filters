@@ -42,6 +42,11 @@
     <ClCompile Include="Materials\BasicMaterial_Deferred.cpp" />
     <ClCompile Include="Prefabs\Hud\GameHud.cpp" />
     <ClCompile Include="Materials\Post\PostVignette.cpp" />
+    <ClCompile Include="Utils\TimerManager.cpp" />
+    <ClCompile Include="Prefabs\Collectibles\Coin.cpp" />
+    <ClCompile Include="Prefabs\Collectibles\RegionalCoin.cpp" />
+    <ClCompile Include="Prefabs\Collectibles\Moon.cpp" />
+    <ClCompile Include="Utils\LocationWriter.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="MainGame.h" />
@@ -86,5 +91,10 @@
     <ClInclude Include="Materials\BasicMaterial_Deferred.h" />
     <ClInclude Include="Prefabs\Hud\GameHud.h" />
     <ClInclude Include="Materials\Post\PostVignette.h" />
+    <ClInclude Include="Utils\TimerManager.h" />
+    <ClInclude Include="Prefabs\Collectibles\Coin.h" />
+    <ClInclude Include="Prefabs\Collectibles\RegionalCoin.h" />
+    <ClInclude Include="Prefabs\Collectibles\Moon.h" />
+    <ClInclude Include="Utils\LocationWriter.h" />
   </ItemGroup>
 </Project>

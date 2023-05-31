@@ -17,6 +17,18 @@ public:
 
 		return m_pInstance;
 	}
+
+	static T* Create()
+	{
+		if (!m_IsInitialized)
+		{
+			m_pInstance = new T();
+			m_pInstance->Initialize();
+			m_IsInitialized = true;
+		}
+
+		return m_pInstance;
+	}
 	
 	static T* Get()
 	{
