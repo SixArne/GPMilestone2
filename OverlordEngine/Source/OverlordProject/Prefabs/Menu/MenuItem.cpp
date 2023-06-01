@@ -63,3 +63,18 @@ void MenuItem::OnImGui()
 	ImGui::SliderFloat2("Position", &m_ContentPosition.x, 0, 1000);
 	ImGui::ColorEdit4("Color", &m_ContentColor.x, ImGuiColorEditFlags_NoInputs);
 }
+
+void MenuItem::Toggle()
+{
+	m_IsActive = !m_IsActive;
+
+	if (m_IsActive)
+	{
+		m_Content = m_ContentBuffer;
+	}
+	else
+	{
+		m_ContentBuffer = m_Content;
+		m_Content = "";
+	}
+}

@@ -48,6 +48,9 @@ public:
 	GameScene* GetScene() const;
 	GameObject* GetParent() const { return m_pParentObject; }
 
+	void SetActive(bool value) { m_IsActive = value; };
+	bool IsActive() const { return m_IsActive; }
+
 	void SetOnTriggerCallBack(PhysicsCallback callback);
 
 #pragma region

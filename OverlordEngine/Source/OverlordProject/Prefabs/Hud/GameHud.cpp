@@ -57,6 +57,11 @@ void GameHud::SetMoons(int moons)
 	}
 }
 
+void GameHud::Toggle()
+{
+	SetActive(!IsActive());
+}
+
 void GameHud::Initialize(const SceneContext& sceneContext)
 {
 	////////////////////////////////////////////////////////////////////
@@ -118,6 +123,8 @@ void GameHud::Initialize(const SceneContext& sceneContext)
 
 void GameHud::Update(const SceneContext& sceneContext)
 {
+	if (!IsActive()) return;
+
 	// TODO: Make seperate prefab of this
 	XMFLOAT2 livesPosition{ sceneContext.windowWidth - 122, 65 };
 	TextRenderer::Get()->DrawText(m_pFont, StringUtil::utf8_decode(std::to_string(m_Lives)), livesPosition, XMFLOAT4{ 0,0,0,1 });

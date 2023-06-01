@@ -47,6 +47,9 @@
     <ClCompile Include="Prefabs\Collectibles\RegionalCoin.cpp" />
     <ClCompile Include="Prefabs\Collectibles\Moon.cpp" />
     <ClCompile Include="Utils\LocationWriter.cpp" />
+    <ClCompile Include="Materials\SkyboxMaterial.cpp" />
+    <ClCompile Include="Prefabs\SkyBox\SkyBox.cpp" />
+    <ClCompile Include="Prefabs\PauseMenu\PauseMenu.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="MainGame.h" />
@@ -96,5 +99,8 @@
     <ClInclude Include="Prefabs\Collectibles\RegionalCoin.h" />
     <ClInclude Include="Prefabs\Collectibles\Moon.h" />
     <ClInclude Include="Utils\LocationWriter.h" />
+    <ClInclude Include="Materials\SkyboxMaterial.h" />
+    <ClInclude Include="Prefabs\SkyBox\SkyBox.h" />
+    <ClInclude Include="Prefabs\PauseMenu\PauseMenu.h" />
   </ItemGroup>
 </Project>

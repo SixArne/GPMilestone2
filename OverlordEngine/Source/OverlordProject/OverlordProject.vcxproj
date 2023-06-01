@@ -93,6 +93,9 @@
     <PostBuildEvent />
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Materials\SkyboxMaterial.cpp" />
+    <ClCompile Include="Prefabs\PauseMenu\PauseMenu.cpp" />
+    <ClCompile Include="Prefabs\SkyBox\SkyBox.cpp" />
     <ClCompile Include="Utils\LocationWriter.cpp" />
     <ClCompile Include="Prefabs\Collectibles\Moon.cpp" />
     <ClCompile Include="Prefabs\Collectibles\Coin.cpp" />
@@ -158,6 +161,9 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Materials\SkyboxMaterial.h" />
+    <ClInclude Include="Prefabs\PauseMenu\PauseMenu.h" />
+    <ClInclude Include="Prefabs\SkyBox\SkyBox.h" />
     <ClInclude Include="Utils\LocationWriter.h" />
     <ClInclude Include="Prefabs\Collectibles\Moon.h" />
     <ClInclude Include="Prefabs\Collectibles\Coin.h" />

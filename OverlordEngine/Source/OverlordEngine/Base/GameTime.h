@@ -18,6 +18,7 @@ public:
 	int GetFPS() const { return m_FPS; }
 	void ForceElapsedUpperbound(bool force, float upperBound = 0.03f){m_ForceElapsedUpperBound = force; m_ElapsedUpperBound = upperBound;}
 	bool IsRunning() const { return !m_IsStopped; }
+	float GetElapsedReal() const { return m_RealElapsedGameTime; };
 
 	void Start();
 	void Stop();
@@ -26,6 +27,7 @@ private:
 
 	float m_TotalGameTime;
 	float m_ElapsedGameTime;
+	float m_RealElapsedGameTime;
 	float m_SecondsPerCount;
 
 	bool m_ForceElapsedUpperBound;
@@ -36,6 +38,9 @@ private:
 	__int64 m_StopTime;
 	__int64 m_PrevTime;
 	__int64 m_CurrTime;
+
+	__int64 m_PrevRealTime;
+	__int64 m_CurrRealTime;
 
 	bool m_IsStopped;
 

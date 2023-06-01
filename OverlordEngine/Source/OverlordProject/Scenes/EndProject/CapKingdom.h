@@ -4,6 +4,7 @@ class Mario;
 class BanzaiBill;
 class GameHud;
 class Mario;
+class PauseMenu;
 
 #include "Utils/LocationWriter.h"
 
@@ -53,19 +54,21 @@ private:
 	void CreatePlayer();
 	void CreateEnemies();
 	void CreateHud();
+	void CreatePauseMenu();
 	void CreatePostProcessEffect();
 	void CreateCollectibles();
+	void CreateSkyBox();
 
 #ifdef _DEBUG
 	void CreateLocationWriter();
 #endif // DEBUG
-	void CreateLocationReader();
 
 
 	void UpdateHUDText();
 	void UpdatePostProcess();
 
 	Mario* m_pMarioComponent{};
+	PauseMenu* m_pPauseMenu{};
 
 	float m_SinWave{};
 	const float m_RadiusMinValue{0.8f};
@@ -84,6 +87,7 @@ private:
 
 	bool m_DrawShadowMap{ false };
 	bool m_HasStartedLevel{ false };
+	bool m_IsPaused{false};
 
 	PostProcessingMaterial* m_pPostProcessEffect{};
 
@@ -97,8 +101,9 @@ private:
 
 	int m_Lives{3};
 
+	std::string m_FileToSaveTo{};
+
 #ifdef _DEBUG
 	LocationWriter m_LocationWriter;
 #endif // DEBUG
-	LocationReader m_LocationReader;
 };

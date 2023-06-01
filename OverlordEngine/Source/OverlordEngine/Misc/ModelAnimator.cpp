@@ -18,7 +18,7 @@ void ModelAnimator::Update(const SceneContext& sceneContext)
 		//Calculate the passedTicks (see the lab document)
 		//auto passedTicks = ...
 		//Make sure that the passedTicks stay between the m_CurrentClip.Duration bounds (fmod)
-		auto passedTicks = sceneContext.pGameTime->GetElapsed() * m_CurrentClip.ticksPerSecond * m_AnimationSpeed;
+		auto passedTicks = sceneContext.pGameTime->GetElapsedReal() * m_CurrentClip.ticksPerSecond * m_AnimationSpeed;
 		passedTicks = fmod(passedTicks, m_CurrentClip.duration);
 
 		//2. 

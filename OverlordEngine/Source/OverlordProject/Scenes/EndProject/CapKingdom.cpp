@@ -12,6 +12,9 @@
 #include <Utils/TimerManager.h>
 #include "Utils/LocationWriter.h"
 #include "Prefabs/Collectibles/Coin.h"
+#include "Prefabs/Collectibles/Moon.h"
+#include "Prefabs/SkyBox/SkyBox.h"
+#include "Prefabs/PauseMenu/PauseMenu.h"
 #include <array>
 
 #include "Materials/Shadow/DiffuseMaterial_Shadow.h"
@@ -40,6 +43,8 @@ void CapKingdom::Initialize()
 	inputAction = InputAction(CharacterJump, InputState::pressed, VK_SPACE, -1, XINPUT_GAMEPAD_A);
 	m_SceneContext.pInput->AddInputAction(inputAction);
 
+	inputAction = InputAction(PauseMenu::PauseMenuOptions::Open, InputState::pressed, VK_ESCAPE, -1, XINPUT_GAMEPAD_Y);
+	m_SceneContext.pInput->AddInputAction(inputAction);
 
 	m_SceneContext.settings.enableOnGUI = true;
 	m_SceneContext.settings.drawPhysXDebug = false;
@@ -47,19 +52,18 @@ void CapKingdom::Initialize()
 	m_SceneContext.useDeferredRendering = false;
 
 
-	/*CreateFloor();
-	CreateWalls();*/
 	CreateMap();
 	CreatePlayer();
 	CreatePostProcessEffect();
 	CreateHud();
+	CreateSkyBox();
+	CreatePauseMenu();
 
 
 
 #ifdef _DEBUG
 	CreateLocationWriter();
 #endif // _DEBUG
-	CreateLocationReader();
 	CreateCollectibles();
 
 
@@ -69,22 +73,45 @@ void CapKingdom::Initialize()
 	m_SceneContext.pInput->AddInputAction(InputAction(0, InputState::pressed, VK_DELETE));
 
 #ifdef _DEBUG
-	inputAction = InputAction(100, InputState::pressed, VK_SPACE, -1, XINPUT_GAMEPAD_B);
+	inputAction = InputAction(1000, InputState::pressed, VK_SPACE, -1, XINPUT_GAMEPAD_B);
 	m_SceneContext.pInput->AddInputAction(inputAction);
 #endif // _DEBUG
 }
 
 void CapKingdom::Update()
 {
+	if (m_SceneContext.pInput->IsActionTriggered(PauseMenu::PauseMenuOptions::Open))
+	{
+		m_pPauseMenu->Toggle();
+		m_pHud->Toggle();
+
+		if (m_pPauseMenu->IsActive())
+		{
+			m_SceneContext.pGameTime->Stop();
+			m_pBackgroundMusic->setPaused(true);
+			m_pChannel3D->setPaused(true);
+			m_IsPaused = true;
+		}
+		else
+		{
+			m_SceneContext.pGameTime->Start();
+			m_pBackgroundMusic->setPaused(false);
+			m_pChannel3D->setPaused(false);
+			m_IsPaused = false;
+		}
+	}
+
+	if (m_IsPaused) return;
+
 #ifdef _DEBUG
-	if (m_SceneContext.pInput->IsActionTriggered(100))
+	if (m_SceneContext.pInput->IsActionTriggered(1000))
 	{
 		std::cout << "writing location data" << std::endl;
 		m_LocationWriter.WriteLocation(m_pMarioComponent->GetCharacterController()->GetTransform()->GetWorldPosition());
 	}
 #endif // _DEBUG
 
-
+	
 
 	if (!m_HasStartedLevel)
 	{
@@ -95,7 +122,7 @@ void CapKingdom::Update()
 	UpdateAudioListeners();
 	UpdateHUDText();
 	UpdatePostProcess();
-	TimerManager::Get()->Update(m_SceneContext.pGameTime->GetElapsed());
+	TimerManager::Get()->Update(m_SceneContext.pGameTime->GetElapsedReal());
 }
 
 void CapKingdom::Draw()
@@ -106,6 +133,8 @@ void CapKingdom::Draw()
 
 void CapKingdom::PostDraw()
 {
+	if (m_IsPaused) return;
+
 	if (m_DrawShadowMap)
 	{
 		ShadowMapRenderer::Get()->Debug_DrawDepthSRV({ m_SceneContext.windowWidth - 10.f, 10.f }, { m_ShadowMapScale, m_ShadowMapScale }, { 1.f,0.f });
@@ -124,6 +153,16 @@ void CapKingdom::OnGUI()
 
 	ImGui::Checkbox("Draw ShadowMap", &m_DrawShadowMap);
 	ImGui::SliderFloat("ShadowMap Scale", &m_ShadowMapScale, 0.f, 1.f);
+
+#ifdef _DEBUG
+	ImGui::InputText("Input", m_FileToSaveTo.data(), ImGuiInputTextFlags_EnterReturnsTrue);
+	ImGui::Text("using %s", m_FileToSaveTo.data());
+	if (ImGui::Button("use file", ImVec2{ 100, 50 }))
+	{
+		m_LocationWriter.SetFile(m_FileToSaveTo);
+		std::cout << "Now writing to: "<< m_FileToSaveTo << std::endl;
+	}
+#endif
 }
 
 void CapKingdom::InitSound()
@@ -426,7 +465,7 @@ void CapKingdom::CreateBridge()
 
 void CapKingdom::CreatePlayer()
 {
-	m_pMarioComponent = AddChild(new Mario());
+	m_pMarioComponent = AddChild(new Mario(m_SceneContext));
 	m_pMarioComponent->SetLives(3);
 
 	m_pMarioComponent->SetStartPosition(XMFLOAT3{ -550, 0, -553 });
@@ -439,24 +478,29 @@ void CapKingdom::CreatePlayer()
 
 void CapKingdom::CreateEnemies()
 {
-	//for (int i{}; i < 3; i++)
-	//{
-	//	auto bill = AddChild(new BanzaiBill(m_pMarioComponent));
-	//	bill->GetTransform()->Translate((float)i * 400, 2, 0);
+	for (int i{}; i < 3; i++)
+	{
+		auto bill = AddChild(new BanzaiBill(m_pMarioComponent));
+		bill->GetTransform()->Translate((float)i * 400, 2, 0);
 
-	//	bill->SetOnDeathCallback([this, bill]() {
-	//		// Remove from m_Bills
-	//		auto it = std::find(begin(m_Bills), end(m_Bills), bill);
-	//		m_Bills.erase(it);
-	//		});
+		bill->SetOnDeathCallback([this, bill]() {
+			//Remove from m_Bills
+				auto it = std::find(begin(m_Bills), end(m_Bills), bill);
+			m_Bills.erase(it);
+			});
 
-	//	m_Bills.push_back(bill);
-	//}
+		m_Bills.push_back(bill);
+	}
 }
 
 void CapKingdom::CreateHud()
 {
 	m_pHud = AddChild(new GameHud());
+}
+
+void CapKingdom::CreatePauseMenu()
+{
+	m_pPauseMenu = AddChild(new PauseMenu());
 }
 
 void CapKingdom::CreatePostProcessEffect()
@@ -471,13 +515,28 @@ void CapKingdom::CreatePostProcessEffect()
 
 void CapKingdom::CreateCollectibles()
 {
-	auto locations = m_LocationReader.ReadLocations();
+	auto coinReader = LocationReader("coins.txt");
+	auto locations = coinReader.ReadLocations();
 
 	for (auto loc : locations)
 	{
 		auto coin = AddChild(new Coin());
 		coin->GetTransform()->Translate(loc.x, loc.y + 1, loc.z);
 	}
+
+	auto moonReader = LocationReader("moons.txt");
+	locations = moonReader.ReadLocations();
+
+	for (auto loc : locations)
+	{
+		auto moon = AddChild(new Moon());
+		moon->GetTransform()->Translate(loc.x, loc.y + 1, loc.z);
+	}
+}
+
+void CapKingdom::CreateSkyBox()
+{
+	AddChild(new SkyBox());
 }
 
 #ifdef _DEBUG
@@ -486,11 +545,6 @@ void CapKingdom::CreateLocationWriter()
 	m_LocationWriter = LocationWriter("data.txt");
 }
 #endif
-
-void CapKingdom::CreateLocationReader()
-{
-	m_LocationReader = LocationReader("data.txt");
-}
 
 void CapKingdom::UpdateHUDText()
 {

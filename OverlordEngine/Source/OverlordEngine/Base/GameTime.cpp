@@ -37,6 +37,14 @@ void GameTime::Reset()
 
 void GameTime::Update()
 {
+	__int64 currTime{};
+	QueryPerformanceCounter(reinterpret_cast<LARGE_INTEGER*>(&currTime));
+	m_CurrRealTime = currTime;
+	
+	m_RealElapsedGameTime = static_cast<float>((m_CurrRealTime - m_PrevRealTime) * m_SecondsPerCount);
+	m_PrevRealTime = m_CurrRealTime;
+
+
 	if(m_IsStopped)
 	{
 		m_FPS = 0;
@@ -45,7 +53,6 @@ void GameTime::Update()
 		return;
 	}
 
-	__int64 currTime{};
 	QueryPerformanceCounter(reinterpret_cast<LARGE_INTEGER*>(&currTime));
 	m_CurrTime = currTime;
 

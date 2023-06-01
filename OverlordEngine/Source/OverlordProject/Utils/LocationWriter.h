@@ -23,6 +23,11 @@ public:
 		}
 	}
 
+	void SetFile(const std::string& file)
+	{
+		m_Filename = std::string(file);
+	}
+
 private:
 	std::string m_Filename{};
 };

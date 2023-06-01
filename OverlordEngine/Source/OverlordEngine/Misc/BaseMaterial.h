@@ -18,6 +18,7 @@ public:
 	UINT GetMaterialId() const { return m_MaterialId; }
 	bool HasValidMaterialId() const { return m_MaterialId != UINT_MAX; }
 	bool IsValid() const { return HasValidMaterialId() && m_IsInitialized; }
+	ID3DX11Effect* GetEffect() { return m_pEffect; };
 
 	ID3DX11EffectVariable* GetVariable(const std::wstring& varName) const;
 

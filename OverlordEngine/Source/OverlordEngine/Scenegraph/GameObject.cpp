@@ -84,53 +84,62 @@ void GameObject::RootUpdate(const SceneContext& sceneContext)
 }
 void GameObject::RootDraw(const SceneContext& sceneContext)
 {
-	//User-Object Draw
-	Draw(sceneContext);
-
-	//Component Draw
-	for(BaseComponent* pComp: m_pComponents)
+	if (m_IsActive)
 	{
-		pComp->Draw(sceneContext);
-	}
+		//User-Object Draw
+		Draw(sceneContext);
 
-	//Root-Object Draw
-	for(GameObject* pChild: m_pChildren)
-	{
-		pChild->RootDraw(sceneContext);
+		//Component Draw
+		for (BaseComponent* pComp : m_pComponents)
+		{
+			pComp->Draw(sceneContext);
+		}
+
+		//Root-Object Draw
+		for (GameObject* pChild : m_pChildren)
+		{
+			pChild->RootDraw(sceneContext);
+		}
 	}
 }
 void GameObject::RootPostDraw(const SceneContext& sceneContext)
 {
-	//Post-Draw
-	PostDraw(sceneContext);
-
-	//Component Post-Draw
-	for (BaseComponent* pComp : m_pComponents)
+	if (m_IsActive)
 	{
-		if(pComp->m_enablePostDraw)
-			pComp->PostDraw(sceneContext);
-	}
+		//Post-Draw
+		PostDraw(sceneContext);
 
-	//Root-Object Post-Draw
-	for (GameObject* pChild : m_pChildren)
-	{
-		pChild->RootPostDraw(sceneContext);
+		//Component Post-Draw
+		for (BaseComponent* pComp : m_pComponents)
+		{
+			if (pComp->m_enablePostDraw)
+				pComp->PostDraw(sceneContext);
+		}
+
+		//Root-Object Post-Draw
+		for (GameObject* pChild : m_pChildren)
+		{
+			pChild->RootPostDraw(sceneContext);
+		}
 	}
 }
 
 void GameObject::RootShadowMapDraw(const SceneContext& sceneContext) const
 {
-	//Component Shadow-Draw
-	for (BaseComponent* pComp : m_pComponents)
+	if (m_IsActive)
 	{
-		if(pComp->m_enableShadowMapDraw)
-			pComp->ShadowMapDraw(sceneContext);
-	}
+		//Component Shadow-Draw
+		for (BaseComponent* pComp : m_pComponents)
+		{
+			if (pComp->m_enableShadowMapDraw)
+				pComp->ShadowMapDraw(sceneContext);
+		}
 
-	//Root-Object Shadow-Draw
-	for (GameObject* pChild : m_pChildren)
-	{
-		pChild->RootShadowMapDraw(sceneContext);
+		//Root-Object Shadow-Draw
+		for (GameObject* pChild : m_pChildren)
+		{
+			pChild->RootShadowMapDraw(sceneContext);
+		}
 	}
 }
 

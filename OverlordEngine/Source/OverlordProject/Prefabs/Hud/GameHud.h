@@ -19,6 +19,8 @@ public:
 	void SetSpecialCoins(int score);
 	void SetMoons(int moons);
 
+	void Toggle();
+
 protected:
 	void Initialize(const SceneContext& sceneContext) override;
 	void Update(const SceneContext& sceneContext) override;
@@ -26,6 +28,7 @@ protected:
 private:
 
 	std::string PadText(int number, int padSize);
+
 
 	int m_Coins = 0;
 	int m_SpecialCoins = 0;

@@ -16,6 +16,8 @@ public:
 	const std::string& GetText();
 
 	void OnImGui();
+	void Toggle();
+	void SetMenuItemActive(bool value) { m_IsActive = value;}
 
 protected:
 	void Initialize(const SceneContext& sceneContext) override;
@@ -24,8 +26,10 @@ protected:
 
 private:
 	SpriteFont* m_pFont{};
+	bool m_IsActive{true};
 
 	std::string m_Content{ "My example string" };
+	std::string m_ContentBuffer{};
 	XMFLOAT2 m_ContentPosition{};
 	XMFLOAT4 m_ContentColor{ 1.f, 1.f, 1.f, 1.f };
 

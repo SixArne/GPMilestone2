@@ -4,7 +4,7 @@ class Character;
 class Mario : public GameObject
 {
 public:
-	Mario();
+	Mario(const SceneContext& context);
 	~Mario() override = default;
 
 	Mario(const Mario& other) = delete;
@@ -47,6 +47,7 @@ private:
 	
 	ModelAnimator* pAnimator{};
 	ModelComponent* m_pMarioModel{};
+	const SceneContext& m_pSceneContext;
 
 	FMOD::Channel* m_pJumpSound = nullptr;
 	FMOD::Channel* m_pHealthChannel = nullptr;
@@ -57,6 +58,7 @@ private:
 	FMOD::Sound* m_pLastLifeSoundEffect = nullptr;
 	FMOD::Sound* m_pDeathSoundEffect = nullptr;
 	FMOD::Sound* m_pCoinSoundEffect = nullptr;
+	FMOD::Sound* m_pMoonSoundEffect = nullptr;
 
 	int m_AnimationClipId{ 0 };
 	float m_AnimationSpeed{ 1.f };
@@ -83,6 +85,8 @@ private:
 	bool m_IsDead{ false };
 	bool m_HasRecentlyDied{ false };
 	bool m_HasInvincibilityFrames{false};
+	bool m_IsPlayingDance{ false };
+
 	float m_InvincibilityTimer{0.f};
 	float m_InvincibilityTime{1.f};
 

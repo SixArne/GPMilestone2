@@ -3,6 +3,7 @@
 #include "Materials/DiffuseMaterial_Skinned.h"
 #include "Materials/Shadow/DiffuseMaterial_Shadow_Skinned.h"
 #include "Prefabs/Character.h"
+#include "Utils/TimerManager.h"
 
 
 void Mario::TakeDamage()
@@ -60,7 +61,30 @@ void Mario::TakeDamage()
 
 void Mario::TakeMoon()
 {
+	m_pSceneContext.pGameTime->Stop();
+
+	pAnimator->SetAnimation(L"Moon");
+	pAnimator->Play();
+	m_IsPlayingDance = true;
+
+	TimerManager::Get()->CreateTimer(2.5f, [this]() {
+		m_pSceneContext.pGameTime->Start();
+
+		pAnimator->SetAnimation(L"Idle");
+		pAnimator->Play();
+
+		m_IsPlayingDance = false;
+		std::cout << "Resume time " << std::endl;
+	});
+
 	m_Moons++;
+
+	FMOD::Channel* channel = NULL;
+	SoundManager::Get()->GetSystem()->playSound(m_pMoonSoundEffect, nullptr, false, &channel);
+	if (channel)
+	{
+		channel->setVolume(0.1f);
+	}
 }
 
 void Mario::TakeCoin()
@@ -95,13 +119,14 @@ Character* Mario::GetCharacterController()
 	return m_pCharacterController;
 }
 
-void Mario::Initialize(const SceneContext& /*sceneContext*/)
+void Mario::Initialize(const SceneContext&)
 {
+
 	//////////////////////////////////////////////////////////////////////////
 	//							Character Controller.
 	//////////////////////////////////////////////////////////////////////////
 	m_pVisuals = new GameObject();
-	m_pMarioModel = m_pVisuals->AddComponent(new ModelComponent(L"Meshes/mario.ovm"));
+	m_pMarioModel = m_pVisuals->AddComponent(new ModelComponent(L"Meshes/Characters/mario.ovm"));
 	m_pVisuals->GetTransform()->Scale(4, 4, 4);
 	m_pVisuals->GetTransform()->Translate(0, -8, 0);
 
@@ -206,7 +231,8 @@ void Mario::PostInitialize(const SceneContext&)
 	pAnimator->Play();
 }
 
-Mario::Mario()
+Mario::Mario(const SceneContext& context)
+	:m_pSceneContext{context}
 {
 	std::cout << "constructing mario" << std::endl;
 }
@@ -240,6 +266,7 @@ int Mario::GetMoons()
 void Mario::Update(const SceneContext& sceneContext)
 {
 	if (m_IsDead && !m_HasRecentlyDied) return;
+	if (m_IsPlayingDance) return;
 
 	////////////////////////////////////////////////////////////
 	//						Visual rotation
@@ -364,6 +391,14 @@ void Mario::InitializeSounds()
 
 		SoundManager::Get()->GetSystem()->createStream("Resources/Sound/coin.mp3", FMOD_DEFAULT, nullptr, &m_pCoinSoundEffect);
 		m_pCoinSoundEffect->setMode(FMOD_LOOP_OFF);
+
+	}
+
+	if (!m_pMoonSoundEffect)
+	{
+
+		SoundManager::Get()->GetSystem()->createStream("Resources/Sound/moon.mp3", FMOD_DEFAULT, nullptr, &m_pMoonSoundEffect);
+		m_pMoonSoundEffect->setMode(FMOD_LOOP_OFF);
 
 	}
 

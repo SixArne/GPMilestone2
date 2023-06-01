@@ -31,11 +31,16 @@ void Coin::Initialize(const SceneContext&)
 		});
 }
 
-void Coin::Update(const SceneContext& )
+void Coin::Update(const SceneContext& sceneContext)
 {
+	m_Angle += sceneContext.pGameTime->GetElapsed() * 100;
+	m_Oscelator += sceneContext.pGameTime->GetElapsed();
+
+	GetTransform()->Move(0, sin(m_Oscelator) * .01f, 0);
+	GetTransform()->Rotate(0, m_Angle, 0);
+
 	if (m_MarkedForDestruction)
 	{
-
 		GetScene()->RemoveChild(this, true);
 	}
 }
