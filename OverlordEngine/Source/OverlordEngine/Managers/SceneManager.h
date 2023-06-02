@@ -11,6 +11,7 @@ public:
 	void RemoveGameScene(GameScene* pScene, bool deleteObject = false);
 	void SetActiveGameScene(const std::wstring& sceneName);
 	void NextScene();
+	void ReloadScene();
 	void PreviousScene();
 	GameScene* GetActiveScene() const { return m_ActiveScene; }
 	const SceneContext& GetActiveSceneContext() const { return m_ActiveScene->GetSceneContext(); }
@@ -33,5 +34,8 @@ private:
 
 	std::vector<GameScene*> m_pScenes{};
 	GameScene* m_ActiveScene{}, * m_NewActiveScene{};
+	GameScene* m_pPreviousScene{};
+
+	bool m_NeedToCleanupScenes{false};
 };
 

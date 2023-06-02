@@ -21,6 +21,7 @@ protected:
 	void Draw() override;
 	void OnGUI() override;
 	void PostDraw() override;
+	void OnSceneDeactivated() override;
 
 private:
 	void PlayAudio(FMOD::Sound* sound, FMOD::Channel* ch, float volume);
@@ -54,4 +55,5 @@ private:
 	MenuItem* m_pQuitButton{};
 
 	bool m_IsIntroPlaying{ true };
+	bool m_isAudioLoaded{ false };
 };

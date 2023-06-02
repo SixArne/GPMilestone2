@@ -13,6 +13,10 @@ public:
 
 	void Toggle();
 
+	void SetOnRestartCallback(std::function<void()> callback) { m_RestartCallback = callback; };
+	void SetOnMenuCallback(std::function<void()> callback) { m_MainMenuCallback = callback; };
+	void SetOnQuitCallback(std::function<void()> callback) { m_QuitCallback = callback; };
+
 	enum PauseMenuOptions
 	{
 		Open = 100,
@@ -40,6 +44,9 @@ private:
 	std::vector<MenuItem*> m_pButtons{};
 	size_t m_CurrentButtonIdx{ 0 };
 
+	std::function<void()> m_RestartCallback{};
+	std::function<void()> m_QuitCallback{};
+	std::function<void()> m_MainMenuCallback{};
 
 	MenuItem* m_pPlayButton{};
 	MenuItem* m_pQuitButton{};

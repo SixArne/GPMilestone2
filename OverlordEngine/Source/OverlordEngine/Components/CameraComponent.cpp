@@ -56,7 +56,7 @@ void CameraComponent::SetActive(bool active)
 	ASSERT_IF(!pGameObject, L"Failed to set active camera. Parent game object is null");
 
 	if (!pGameObject) return; //help the compiler... (C6011)
-	const auto pScene = pGameObject->GetScene();
+ 	const auto pScene = pGameObject->GetScene();
 	ASSERT_IF(!pScene, L"Failed to set active camera. Parent game scene is null");
 
 	m_IsActive = active;

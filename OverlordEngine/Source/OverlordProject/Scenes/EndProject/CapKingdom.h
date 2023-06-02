@@ -10,11 +10,10 @@ class PauseMenu;
 
 
 class CapKingdom :
-    public GameScene
+	public GameScene
 {
 public:
 	CapKingdom() : GameScene(L"CapkingdomScene") {}
-
 	~CapKingdom() override;
 	CapKingdom(const CapKingdom& other) = delete;
 	CapKingdom(CapKingdom&& other) noexcept = delete;
@@ -28,12 +27,17 @@ protected:
 	void OnGUI() override;
 	void PostDraw() override;
 
+	void OnSceneActivated() override;
+	void OnSceneDeactivated() override;
+
 private:
 	GameObject* m_pModelGameObject{};
 	FMOD::Channel* m_pBackgroundMusic = nullptr;
 	FMOD::Channel* m_pChannel3D = nullptr;
 
 	FMOD::Sound* m_pSound = nullptr;
+	FMOD::Sound* m_pRocketSound = nullptr;
+
 	FreeCamera* m_pCamera{};
 	GameObject* m_pProtagonist{};
 
@@ -58,6 +62,8 @@ private:
 	void CreatePostProcessEffect();
 	void CreateCollectibles();
 	void CreateSkyBox();
+
+	void ClearAudio();
 
 #ifdef _DEBUG
 	void CreateLocationWriter();
@@ -88,6 +94,9 @@ private:
 	bool m_DrawShadowMap{ false };
 	bool m_HasStartedLevel{ false };
 	bool m_IsPaused{false};
+	bool m_IsInitialized{ true };
+
+	std::vector<GameObject*> m_CustomObjects{};
 
 	PostProcessingMaterial* m_pPostProcessEffect{};
 

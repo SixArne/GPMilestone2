@@ -196,6 +196,11 @@ RigidBodyComponent* BanzaiBill::GetRigidBody()
 	return m_pRigidBody;
 }
 
+void BanzaiBill::SetMarioRef(Mario* marioRef)
+{
+	m_pMario = marioRef;
+}
+
 XMFLOAT3 BanzaiBill::ApplyRotationToVelocity(const XMFLOAT4& rotation, const XMFLOAT3& velocity)
 {
 	// Convert the input XMFLOAT4 and XMFLOAT3 to XMVECTOR

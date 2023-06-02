@@ -47,6 +47,8 @@ public:
 	
 	static void Destroy()
 	{
+		m_IsInitialized = false;
+
 		delete m_pInstance;
 		m_pInstance = nullptr;
 	}

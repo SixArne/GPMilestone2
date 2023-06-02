@@ -75,6 +75,14 @@ void GameScene::OnGUI()
 	}
 }
 
+void GameScene::OnSceneActivated()
+{
+}
+
+void GameScene::OnSceneDeactivated()
+{
+}
+
 void GameScene::RootInitialize(const GameContext& gameContext)
 {
 	if (m_IsInitialized)

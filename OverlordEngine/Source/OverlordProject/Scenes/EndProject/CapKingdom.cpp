@@ -21,35 +21,51 @@
 
 CapKingdom::~CapKingdom()
 {
-	TimerManager::Destroy();
+	if (TimerManager::Get() != nullptr)
+	{
+		TimerManager::Destroy();
+	}
 }
 
 void CapKingdom::Initialize()
 {
 	TimerManager::Create();
 
-	auto inputAction = InputAction(CharacterMoveLeft, InputState::down, 'A');
-	m_SceneContext.pInput->AddInputAction(inputAction);
 
-	inputAction = InputAction(CharacterMoveRight, InputState::down, 'D');
-	m_SceneContext.pInput->AddInputAction(inputAction);
+	if (m_IsInitialized)
+	{
+		auto inputAction = InputAction(CharacterMoveLeft, InputState::down, 'A');
+		m_SceneContext.pInput->AddInputAction(inputAction);
 
-	inputAction = InputAction(CharacterMoveForward, InputState::down, 'W');
-	m_SceneContext.pInput->AddInputAction(inputAction);
+		inputAction = InputAction(CharacterMoveRight, InputState::down, 'D');
+		m_SceneContext.pInput->AddInputAction(inputAction);
 
-	inputAction = InputAction(CharacterMoveBackward, InputState::down, 'S');
-	m_SceneContext.pInput->AddInputAction(inputAction);
+		inputAction = InputAction(CharacterMoveForward, InputState::down, 'W');
+		m_SceneContext.pInput->AddInputAction(inputAction);
 
-	inputAction = InputAction(CharacterJump, InputState::pressed, VK_SPACE, -1, XINPUT_GAMEPAD_A);
-	m_SceneContext.pInput->AddInputAction(inputAction);
+		inputAction = InputAction(CharacterMoveBackward, InputState::down, 'S');
+		m_SceneContext.pInput->AddInputAction(inputAction);
 
-	inputAction = InputAction(PauseMenu::PauseMenuOptions::Open, InputState::pressed, VK_ESCAPE, -1, XINPUT_GAMEPAD_Y);
-	m_SceneContext.pInput->AddInputAction(inputAction);
+		inputAction = InputAction(CharacterJump, InputState::pressed, VK_SPACE, -1, XINPUT_GAMEPAD_A);
+		m_SceneContext.pInput->AddInputAction(inputAction);
 
-	m_SceneContext.settings.enableOnGUI = true;
-	m_SceneContext.settings.drawPhysXDebug = false;
-	m_SceneContext.settings.drawGrid = false;
-	m_SceneContext.useDeferredRendering = false;
+		inputAction = InputAction(PauseMenu::PauseMenuOptions::Open, InputState::pressed, VK_ESCAPE, -1, XINPUT_GAMEPAD_Y);
+		m_SceneContext.pInput->AddInputAction(inputAction);
+
+		m_SceneContext.settings.enableOnGUI = true;
+		m_SceneContext.settings.drawPhysXDebug = false;
+		m_SceneContext.settings.drawGrid = false;
+		m_SceneContext.useDeferredRendering = false;
+
+		m_SceneContext.pLights->SetDirectionalLight({ -95.6139526f,66.1346436f,-41.1850471f }, { 0.740129888f, -0.597205281f, 0.309117377f });
+		m_SceneContext.pInput->AddInputAction(InputAction(0, InputState::pressed, VK_DELETE));
+
+#ifdef _DEBUG
+		inputAction = InputAction(1000, InputState::pressed, VK_SPACE, -1, XINPUT_GAMEPAD_B);
+		m_SceneContext.pInput->AddInputAction(inputAction);
+#endif // _DEBUG
+	}
+	
 
 
 	CreateMap();
@@ -68,14 +84,6 @@ void CapKingdom::Initialize()
 
 
 	CreateEnemies();
-
-	m_SceneContext.pLights->SetDirectionalLight({ -95.6139526f,66.1346436f,-41.1850471f }, { 0.740129888f, -0.597205281f, 0.309117377f });
-	m_SceneContext.pInput->AddInputAction(InputAction(0, InputState::pressed, VK_DELETE));
-
-#ifdef _DEBUG
-	inputAction = InputAction(1000, InputState::pressed, VK_SPACE, -1, XINPUT_GAMEPAD_B);
-	m_SceneContext.pInput->AddInputAction(inputAction);
-#endif // _DEBUG
 }
 
 void CapKingdom::Update()
@@ -141,6 +149,35 @@ void CapKingdom::PostDraw()
 	}
 }
 
+void CapKingdom::OnSceneActivated()
+{
+	if (!m_IsInitialized)
+	{
+		Initialize();
+	}
+
+	m_pMarioComponent->PostInitialize(m_SceneContext);
+}
+
+void CapKingdom::OnSceneDeactivated()
+{
+	m_SceneContext.pCamera->SetActive(false);
+
+	for (size_t i{m_pChildren.size() - 1}; i >= 1; --i)
+	{
+		RemoveChild(m_pChildren[i], true);
+	}
+
+	m_Bills.clear();
+	ClearAudio();
+
+	m_IsInitialized = false;
+	m_HasStartedLevel = false;
+	m_IsPaused = false;
+
+	TimerManager::Destroy();
+}
+
 void CapKingdom::OnGUI()
 {
 	GameScene::OnGUI();
@@ -167,21 +204,21 @@ void CapKingdom::OnGUI()
 
 void CapKingdom::InitSound()
 {
-	if (!m_pSound)
-	{
-		SoundManager::Get()->GetSystem()->createStream("Resources/Sound/altar_cave.mp3", FMOD_DEFAULT, nullptr, &m_pSound);
-		m_pSound->setMode(FMOD_LOOP_NORMAL);
-		m_pSound->set3DMinMaxDistance(0.f, 100.f);
-	}
+
+	SoundManager::Get()->GetSystem()->createStream("Resources/Sound/altar_cave.mp3", FMOD_DEFAULT, nullptr, &m_pSound);
+	m_pSound->setMode(FMOD_LOOP_NORMAL);
+	m_pSound->set3DMinMaxDistance(0.f, 100.f);
+
 
 	SoundManager::Get()->GetSystem()->playSound(m_pSound, nullptr, false, &m_pBackgroundMusic);
 	m_pBackgroundMusic->setVolume(0.1f);
 
-	FMOD::Sound* pSound2{};
-	auto result = SoundManager::Get()->GetSystem()->createStream("Resources/Sound/rocket.mp3", FMOD_3D | FMOD_3D_LINEARROLLOFF, 0, &pSound2);
+
+	auto result = SoundManager::Get()->GetSystem()->createStream("Resources/Sound/rocket.mp3", FMOD_3D | FMOD_3D_LINEARROLLOFF, 0, &m_pRocketSound);
 
 
-	result = SoundManager::Get()->GetSystem()->playSound(pSound2, nullptr, false, &m_pChannel3D);
+
+	 result = SoundManager::Get()->GetSystem()->playSound(m_pRocketSound, nullptr, false, &m_pChannel3D);
 
 	m_pChannel3D->setMode(FMOD_LOOP_NORMAL);
 	m_pChannel3D->setVolume(0.3f);
@@ -317,6 +354,8 @@ void CapKingdom::CreateFirstIsland()
 	entrance->GetTransform()->Rotate(90, 0, 0);
 
 	AddChild(entrance);
+
+	m_CustomObjects.push_back(entrance);
 }
 
 void CapKingdom::CreateSecondIsland()
@@ -391,6 +430,9 @@ void CapKingdom::CreateSecondIsland()
 	entrance->AddComponent(pRigidBodyMesh);
 
 	AddChild(entrance);
+
+	m_CustomObjects.push_back(entrance);
+
 }
 
 void CapKingdom::CreateBridge()
@@ -461,6 +503,9 @@ void CapKingdom::CreateBridge()
 	entrance->AddComponent(pRigidBodyMesh);
 
 	AddChild(entrance);
+
+	m_CustomObjects.push_back(entrance);
+
 }
 
 void CapKingdom::CreatePlayer()
@@ -474,6 +519,9 @@ void CapKingdom::CreatePlayer()
 		{
 			OnGameOver();
 		});
+
+	m_CustomObjects.push_back(m_pMarioComponent);
+
 }
 
 void CapKingdom::CreateEnemies()
@@ -496,11 +544,30 @@ void CapKingdom::CreateEnemies()
 void CapKingdom::CreateHud()
 {
 	m_pHud = AddChild(new GameHud());
+	m_CustomObjects.push_back(m_pHud);
 }
 
 void CapKingdom::CreatePauseMenu()
 {
 	m_pPauseMenu = AddChild(new PauseMenu());
+	m_CustomObjects.push_back(m_pPauseMenu);
+
+	m_pPauseMenu->SetOnRestartCallback([this]() {
+		// CLEANUP AUDIO
+
+		SceneManager::Get()->ReloadScene();
+		});
+
+	m_pPauseMenu->SetOnMenuCallback([this]() {
+		// CLEANUP AUDIO
+
+		SceneManager::Get()->PreviousScene();
+		});
+
+	m_pPauseMenu->SetOnQuitCallback([]()
+		{
+			PostQuitMessage(0);
+		});
 }
 
 void CapKingdom::CreatePostProcessEffect()
@@ -521,6 +588,9 @@ void CapKingdom::CreateCollectibles()
 	for (auto loc : locations)
 	{
 		auto coin = AddChild(new Coin());
+		m_CustomObjects.push_back(coin);
+
+
 		coin->GetTransform()->Translate(loc.x, loc.y + 1, loc.z);
 	}
 
@@ -530,13 +600,25 @@ void CapKingdom::CreateCollectibles()
 	for (auto loc : locations)
 	{
 		auto moon = AddChild(new Moon());
+		m_CustomObjects.push_back(moon);
+
 		moon->GetTransform()->Translate(loc.x, loc.y + 1, loc.z);
 	}
+
+
 }
 
 void CapKingdom::CreateSkyBox()
 {
-	AddChild(new SkyBox());
+	auto skyBox = AddChild(new SkyBox());
+
+	m_CustomObjects.push_back(skyBox);
+}
+
+void CapKingdom::ClearAudio()
+{
+	m_pBackgroundMusic->setPaused(true);
+	m_pChannel3D->setPaused(true);
 }
 
 #ifdef _DEBUG
@@ -570,7 +652,6 @@ void CapKingdom::UpdatePostProcess()
 
 
 	reinterpret_cast<PostVignette*>(m_pPostProcessEffect)->SetTime(m_SinWave);
-	//reinterpret_cast<PostVignette*>(m_pPostProcessEffect)->SetRadius(m_Radius);
 
 	if (m_pMarioComponent->GetLives() <= 1)
 	{

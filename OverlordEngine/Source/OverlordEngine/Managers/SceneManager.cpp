@@ -58,7 +58,23 @@ void SceneManager::NextScene()
 		if (m_pScenes[i] == m_ActiveScene)
 		{
 			const auto nextScene = ++i % m_pScenes.size();
+
+			m_pPreviousScene = m_ActiveScene;
+			m_NeedToCleanupScenes = true;
+
 			m_NewActiveScene = m_pScenes[nextScene];
+			break;
+		}
+	}
+}
+
+void SceneManager::ReloadScene()
+{
+	for (unsigned int i = 0; i < m_pScenes.size(); ++i)
+	{
+		if (m_pScenes[i] == m_ActiveScene)
+		{
+			m_NewActiveScene = m_ActiveScene;
 			break;
 		}
 	}
@@ -122,6 +138,12 @@ void SceneManager::Update()
 			m_ActiveScene = m_NewActiveScene;
 
 			//Active the new scene and reset SceneTimer
+			m_ActiveScene->RootOnSceneActivated();
+			GameStats::Reset(); //Reset performance stats
+		}
+		else
+		{
+			m_ActiveScene->RootOnSceneDeactivated();
 			m_ActiveScene->RootOnSceneActivated();
 			GameStats::Reset(); //Reset performance stats
 		}

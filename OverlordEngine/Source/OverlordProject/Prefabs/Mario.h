@@ -31,10 +31,10 @@ public:
 
 	Character* GetCharacterController();
 	void SetOnDieCallback(std::function<void()> callback) { m_OnDieCallback = callback; }
+	void PostInitialize(const SceneContext&) override;
 
 protected:
 	void Initialize(const SceneContext&) override;
-	void PostInitialize(const SceneContext&) override;
 	void Update(const SceneContext&) override;
 
 private:

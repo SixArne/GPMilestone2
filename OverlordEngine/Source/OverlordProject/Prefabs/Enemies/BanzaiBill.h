@@ -17,6 +17,8 @@ public:
 	RigidBodyComponent* GetRigidBody();
 	void SetOnDeathCallback(std::function<void()> callback) { m_OnDeathCallback = callback; };
 
+	void SetMarioRef(Mario* marioRef);
+
 protected:
 	void Initialize(const SceneContext&) override;
 	void PostInitialize(const SceneContext&) override;

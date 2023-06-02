@@ -49,8 +49,8 @@ protected:
 	virtual void ShadowDraw() {};
 
 	virtual void OnGUI();
-	virtual void OnSceneActivated() {}
-	virtual void OnSceneDeactivated() {}
+	virtual void OnSceneActivated();
+	virtual void OnSceneDeactivated();
 
 	SceneContext m_SceneContext{};
 	std::vector<GameObject*> m_pChildren{};

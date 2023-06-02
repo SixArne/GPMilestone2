@@ -40,7 +40,7 @@ void PauseMenu::Initialize(const SceneContext& sceneContext)
 	// Menu items
 	//////////////////////////////////////////////////////////////
 
-	m_pPlayButton = AddChild(new MenuItem("Resume"));
+	m_pPlayButton = AddChild(new MenuItem("Restart"));
 	m_pPlayButton->SetPosition(XMFLOAT2{ 250,260 });
 
 	m_pMainMenu = AddChild(new MenuItem("Main menu"));
@@ -81,19 +81,19 @@ void PauseMenu::Update(const SceneContext& sceneContext)
 		{
 		case (int)PauseMenuButtons::Restart:
 		{
-			SceneManager::Get()->NextScene();
+			m_RestartCallback();
 			//m_pBackgroundMusic->setPaused(true);
 			break;
 		}
 		case (int)PauseMenuButtons::Menu:
 		{
-			SceneManager::Get()->NextScene();
+			m_MainMenuCallback();
 			//m_pBackgroundMusic->setPaused(true);
 			break;
 		}
 		case (int)PauseMenuButtons::Quit:
 		{
-			Logger::LogDebug(L"Quiting game");
+			m_QuitCallback();
 			break;
 		}
 		}

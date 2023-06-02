@@ -27,29 +27,7 @@ void MainMenu::Initialize()
 	////////////////////////////////////////////////////////////
 	// Music
 	////////////////////////////////////////////////////////////
-	if (!m_pMenuIntro)
-	{
-		SoundManager::Get()->GetSystem()->createStream("Resources/Sound/main_menu_intro.wav", FMOD_DEFAULT, nullptr, &m_pMenuIntro);
-		m_pMenuIntro->setMode(FMOD_LOOP_OFF);
-		m_pMenuIntro->set3DMinMaxDistance(0.f, 100.f);
-	}
-
-	if (!m_pMenuLoop)
-	{
-		SoundManager::Get()->GetSystem()->createStream("Resources/Sound/main_menu.mp3", FMOD_DEFAULT, nullptr, &m_pMenuLoop);
-		m_pMenuLoop->setMode(FMOD_LOOP_NORMAL);
-		m_pMenuLoop->set3DMinMaxDistance(0.f, 100.f);
-	}
-
-	if (!m_pMenuSelect)
-	{
-		SoundManager::Get()->GetSystem()->createStream("Resources/Sound/menu_select_short.mp3", FMOD_DEFAULT, nullptr, &m_pMenuSelect);
-		m_pMenuSelect->setMode(FMOD_LOOP_OFF);
-		m_pMenuSelect->set3DMinMaxDistance(0.f, 100.f);
-	}
-
-	SoundManager::Get()->GetSystem()->playSound(m_pMenuIntro, nullptr, false, &m_pBackgroundMusic);
-	m_pBackgroundMusic->setVolume(0.1f);
+	
 
 	//////////////////////////////////////////////////////////////
 	// Menu items
@@ -67,6 +45,35 @@ void MainMenu::Initialize()
 
 void MainMenu::Update()
 {
+	if (!m_isAudioLoaded)
+	{
+		if (!m_pMenuIntro)
+		{
+			SoundManager::Get()->GetSystem()->createStream("Resources/Sound/main_menu_intro.wav", FMOD_DEFAULT, nullptr, &m_pMenuIntro);
+			m_pMenuIntro->setMode(FMOD_LOOP_OFF);
+			m_pMenuIntro->set3DMinMaxDistance(0.f, 100.f);
+		}
+
+		if (!m_pMenuLoop)
+		{
+			SoundManager::Get()->GetSystem()->createStream("Resources/Sound/main_menu.mp3", FMOD_DEFAULT, nullptr, &m_pMenuLoop);
+			m_pMenuLoop->setMode(FMOD_LOOP_NORMAL);
+			m_pMenuLoop->set3DMinMaxDistance(0.f, 100.f);
+		}
+
+		if (!m_pMenuSelect)
+		{
+			SoundManager::Get()->GetSystem()->createStream("Resources/Sound/menu_select_short.mp3", FMOD_DEFAULT, nullptr, &m_pMenuSelect);
+			m_pMenuSelect->setMode(FMOD_LOOP_OFF);
+			m_pMenuSelect->set3DMinMaxDistance(0.f, 100.f);
+		}
+
+		SoundManager::Get()->GetSystem()->playSound(m_pMenuIntro, nullptr, false, &m_pBackgroundMusic);
+		m_pBackgroundMusic->setVolume(0.1f);
+
+		m_isAudioLoaded = true;
+	}
+
 	if (m_IsIntroPlaying)
 	{
 		unsigned int currentPosition{};
@@ -107,6 +114,7 @@ void MainMenu::Update()
 		}
 		case (int)MenuButtons::Quit:
 		{
+			PostQuitMessage(0);
 			Logger::LogDebug(L"Quiting game");
 			break;
 		}
@@ -136,6 +144,12 @@ void MainMenu::OnGUI()
 
 void MainMenu::PostDraw()
 {
+}
+
+void MainMenu::OnSceneDeactivated()
+{
+	m_isAudioLoaded = false;
+	m_IsIntroPlaying = true;
 }
 
 void MainMenu::PlayAudio(FMOD::Sound* sound, FMOD::Channel* ch, float volume)
