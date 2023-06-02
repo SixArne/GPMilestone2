@@ -34,7 +34,7 @@ private:
 	int m_SpecialCoins = 0;
 	int m_Lives = 3;
 	int m_Moons = 0;
-	int m_TotalMoons = 7;
+	int m_TotalMoons = 5;
 
 	TextureData* m_pCoinTexture = nullptr;
 	TextureData* m_pLifeTexture = nullptr;

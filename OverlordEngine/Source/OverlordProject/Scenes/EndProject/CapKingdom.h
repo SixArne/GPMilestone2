@@ -33,10 +33,13 @@ protected:
 private:
 	GameObject* m_pModelGameObject{};
 	FMOD::Channel* m_pBackgroundMusic = nullptr;
-	FMOD::Channel* m_pChannel3D = nullptr;
+	FMOD::Channel* m_pChannel3DBills = nullptr;
+	FMOD::Channel* m_pChannel3DExplosion = nullptr;
 
 	FMOD::Sound* m_pSound = nullptr;
 	FMOD::Sound* m_pRocketSound = nullptr;
+	FMOD::Sound* m_pExplosionSound = nullptr;
+	FMOD::Sound* m_pWonSound = nullptr;
 
 	FreeCamera* m_pCamera{};
 	GameObject* m_pProtagonist{};
@@ -49,7 +52,6 @@ private:
 
 	void OnGameOver();
 
-	void UpdateAudioListeners();
 
 	void CreateMap();
 	void CreateFirstIsland();
@@ -72,6 +74,11 @@ private:
 
 	void UpdateHUDText();
 	void UpdatePostProcess();
+	void UpdateAudioListeners();
+
+
+	void OnAllMoonsCollected();
+	void OnMoonCollected();
 
 	Mario* m_pMarioComponent{};
 	PauseMenu* m_pPauseMenu{};

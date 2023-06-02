@@ -16,9 +16,20 @@ void Character::Initialize(const SceneContext& /*sceneContext*/)
 	//Controller
 	m_pControllerComponent = AddComponent(new ControllerComponent(m_CharacterDesc.controller));
 
+	//auto pDefaultMat = PxGetPhysics().createMaterial(0.5f, 0.5f, 0.8f);
+
+
+	
 	//Camera
 	m_pCameraBoom = AddChild(new GameObject());
 	const auto pCamera = m_pCameraBoom->AddChild(new FixedCamera());
+
+
+	//auto rb = pCamera->AddComponent(new RigidBodyComponent());
+	//auto colliderID = rb->AddCollider(PxCapsuleGeometry{ 3,3 }, *pDefaultMat);
+	//auto collider = rb->GetCollider(colliderID);
+	//rb->SetKinematic(true);
+	//collider.SetTrigger(true);
 
 	m_pCameraComponent = pCamera->GetComponent<CameraComponent>();
 	m_pCameraComponent->SetActive(true);

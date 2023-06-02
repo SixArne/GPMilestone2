@@ -24,6 +24,9 @@ public:
 	void TakeCoin();
 	void TakeSpecialCoin();
 
+	void SetOnAllMoonsCallback(std::function<void()> callback);
+	void SetOnMoonCallback(std::function<void()> callback);
+
 	void SetLives(int lives) { m_Lives = lives; }
 
 	void SetStartPosition(XMFLOAT3 position);
@@ -32,6 +35,8 @@ public:
 	Character* GetCharacterController();
 	void SetOnDieCallback(std::function<void()> callback) { m_OnDieCallback = callback; }
 	void PostInitialize(const SceneContext&) override;
+
+	bool IsDead() { return m_IsDead; };
 
 protected:
 	void Initialize(const SceneContext&) override;
@@ -92,4 +97,7 @@ private:
 
 	GameObject* m_pVisuals{};
 	Character* m_pCharacterController{};
+
+	std::function<void()> m_OnAllMoonsCallback{};
+	std::function<void()> m_OnMoonCallback{};
 };

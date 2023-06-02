@@ -18,6 +18,7 @@ public:
 	void SetOnDeathCallback(std::function<void()> callback) { m_OnDeathCallback = callback; };
 
 	void SetMarioRef(Mario* marioRef);
+	bool IsMarkedForDestruction() { return m_MarkedForDestruction; }
 
 protected:
 	void Initialize(const SceneContext&) override;

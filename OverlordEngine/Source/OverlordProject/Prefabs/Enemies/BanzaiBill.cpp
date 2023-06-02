@@ -99,11 +99,22 @@ void BanzaiBill::OnCollision(GameObject* /*pTrigger*/, GameObject* pOther, PxTri
 		{
 
 			Character* character = reinterpret_cast<Character*>(pOther);
-			Mario* mario = reinterpret_cast<Mario*>(character->GetOwningPrefab());
-			mario->TakeDamage();
+			
+			if (character != nullptr)
+			{
+				Mario* mario = reinterpret_cast<Mario*>(character->GetOwningPrefab());
 
-			m_MarkedForDestruction = true;
+				if (mario != nullptr)
+				{
+					mario->TakeDamage();
+
+				}
+			}
+
 		}
+
+		m_MarkedForDestruction = true;
+
 	}
 
 	
@@ -126,7 +137,6 @@ XMFLOAT3 BanzaiBill::GetDirectionToMario()
 	XMFLOAT3 delta{ };
 	XMStoreFloat3(&delta, XMVector3Normalize(deltaVector));
 
-	DebugRenderer::DrawLine(marioPosition, XMFLOAT4{1,0,0,1}, billPosition, XMFLOAT4{0,0,1,1});
 
 	return delta;
 }
@@ -153,7 +163,6 @@ void BanzaiBill::RotateTowardsMario()
 	XMFLOAT3 resultt{};
 	XMStoreFloat3(&resultt, endVector);
 
-	DebugRenderer::DrawLine(begin, XMFLOAT4{0,0,1,1}, resultt, XMFLOAT4{1,0,0,1});
 
 	auto resultVector = XMVector2AngleBetweenVectors(XMLoadFloat2(&direction2D), XMLoadFloat2(&forward2D));
 	XMFLOAT2 result{};

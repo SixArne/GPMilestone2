@@ -67,23 +67,40 @@ void Mario::TakeMoon()
 	pAnimator->Play();
 	m_IsPlayingDance = true;
 
-	TimerManager::Get()->CreateTimer(2.5f, [this]() {
-		m_pSceneContext.pGameTime->Start();
-
-		pAnimator->SetAnimation(L"Idle");
-		pAnimator->Play();
-
-		m_IsPlayingDance = false;
-		std::cout << "Resume time " << std::endl;
-	});
-
 	m_Moons++;
 
-	FMOD::Channel* channel = NULL;
-	SoundManager::Get()->GetSystem()->playSound(m_pMoonSoundEffect, nullptr, false, &channel);
-	if (channel)
+	if (m_Moons == 5)
 	{
-		channel->setVolume(0.1f);
+		TimerManager::Get()->CreateTimer(13.f, [this]() {
+			m_pSceneContext.pGameTime->Start();
+
+			pAnimator->SetAnimation(L"Idle");
+			pAnimator->Play();
+
+			m_IsPlayingDance = false;
+		});
+
+		m_OnAllMoonsCallback();
+	}
+	else
+	{
+		TimerManager::Get()->CreateTimer(2.5f, [this]() {
+			m_pSceneContext.pGameTime->Start();
+
+			pAnimator->SetAnimation(L"Idle");
+			pAnimator->Play();
+
+			m_IsPlayingDance = false;
+		});
+
+		FMOD::Channel* channel = NULL;
+		SoundManager::Get()->GetSystem()->playSound(m_pMoonSoundEffect, nullptr, false, &channel);
+		if (channel)
+		{
+			channel->setVolume(0.1f);
+		}
+
+		m_OnMoonCallback();
 	}
 }
 
@@ -102,6 +119,16 @@ void Mario::TakeCoin()
 void Mario::TakeSpecialCoin()
 {
 	m_SpecialCoins++;
+}
+
+void Mario::SetOnAllMoonsCallback(std::function<void()> callback)
+{
+	m_OnAllMoonsCallback = callback;
+}
+
+void Mario::SetOnMoonCallback(std::function<void()> callback)
+{
+	m_OnMoonCallback = callback;
 }
 
 void Mario::SetStartPosition(XMFLOAT3 position)

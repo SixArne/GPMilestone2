@@ -97,14 +97,14 @@ void CapKingdom::Update()
 		{
 			m_SceneContext.pGameTime->Stop();
 			m_pBackgroundMusic->setPaused(true);
-			m_pChannel3D->setPaused(true);
+			m_pChannel3DBills->setPaused(true);
 			m_IsPaused = true;
 		}
 		else
 		{
 			m_SceneContext.pGameTime->Start();
 			m_pBackgroundMusic->setPaused(false);
-			m_pChannel3D->setPaused(false);
+			m_pChannel3DBills->setPaused(false);
 			m_IsPaused = false;
 		}
 	}
@@ -215,20 +215,25 @@ void CapKingdom::InitSound()
 
 
 	auto result = SoundManager::Get()->GetSystem()->createStream("Resources/Sound/rocket.mp3", FMOD_3D | FMOD_3D_LINEARROLLOFF, 0, &m_pRocketSound);
+	result = SoundManager::Get()->GetSystem()->createStream("Resources/Sound/explosion.mp3", FMOD_3D | FMOD_3D_LINEARROLLOFF, 0, &m_pExplosionSound);
+	result = SoundManager::Get()->GetSystem()->createStream("Resources/Sound/won.mp3", FMOD_DEFAULT, 0, &m_pWonSound);
 
+	result = SoundManager::Get()->GetSystem()->playSound(m_pRocketSound, nullptr, false, &m_pChannel3DBills);
+	result = SoundManager::Get()->GetSystem()->playSound(m_pExplosionSound, nullptr, false, &m_pChannel3DExplosion);
 
+	m_pChannel3DBills->setMode(FMOD_LOOP_NORMAL);
+	m_pChannel3DBills->setVolume(0.3f);
+	m_pChannel3DBills->set3DMinMaxDistance(1.f, 200.f);
 
-	 result = SoundManager::Get()->GetSystem()->playSound(m_pRocketSound, nullptr, false, &m_pChannel3D);
-
-	m_pChannel3D->setMode(FMOD_LOOP_NORMAL);
-	m_pChannel3D->setVolume(0.3f);
-	m_pChannel3D->set3DMinMaxDistance(1.f, 200.f);
+	m_pChannel3DExplosion->setMode(FMOD_LOOP_OFF);
+	m_pChannel3DExplosion->setVolume(0.3f);
+	m_pChannel3DExplosion->set3DMinMaxDistance(1.f, 50.f);
 }
 
 void CapKingdom::OnGameOver()
 {
 	std::cout << "Timer started" << std::endl;
-	TimerManager::Get()->CreateTimer(2.5f, []() {
+	TimerManager::Get()->CreateTimer(3.5f, []() {
 		std::cout << "Mario has died" << std::endl;
 
 		SceneManager::Get()->PreviousScene();
@@ -247,10 +252,11 @@ inline FMOD_VECTOR ToFMod(PxVec3 v)
 
 void CapKingdom::UpdateAudioListeners()
 {
-	auto camera = m_SceneContext.pCamera;
-	auto pos = ToFMod(m_pMarioComponent->GetTransform()->GetWorldPosition());
-	auto forward = ToFMod(camera->GetTransform()->GetForward());
-	auto up = ToFMod(m_pMarioComponent->GetTransform()->GetUp());
+	auto marioPos = m_pMarioComponent->GetCharacterController();
+
+	auto pos = ToFMod(marioPos->GetTransform()->GetWorldPosition());
+	auto forward = ToFMod(marioPos->GetTransform()->GetForward());
+	auto up = ToFMod(marioPos->GetTransform()->GetUp());
 
 	FMOD_VECTOR vel{};
 	auto dt = m_SceneContext.pGameTime->GetElapsed();
@@ -268,7 +274,12 @@ void CapKingdom::UpdateAudioListeners()
 		auto spherePos = ToFMod(bill->GetTransform()->GetWorldPosition());
 		auto sphereVelocity = ToFMod(bill->GetRigidBody()->GetPxRigidActor()->is<PxRigidDynamic>()->getLinearVelocity());
 
-		m_pChannel3D->set3DAttributes(&spherePos, &sphereVelocity);
+		m_pChannel3DBills->set3DAttributes(&spherePos, &sphereVelocity);
+
+		if (bill->IsMarkedForDestruction())
+		{
+			SoundManager::Get()->GetSystem()->playSound(m_pExplosionSound, nullptr, false, &m_pChannel3DExplosion);
+		}
 	}
 	
 }
@@ -519,6 +530,15 @@ void CapKingdom::CreatePlayer()
 		{
 			OnGameOver();
 		});
+	m_pMarioComponent->SetOnAllMoonsCallback([this]() {
+
+			OnAllMoonsCollected();
+		});
+	m_pMarioComponent->SetOnMoonCallback([this]() {
+
+		OnMoonCollected();
+		
+	});
 
 	m_CustomObjects.push_back(m_pMarioComponent);
 
@@ -526,14 +546,17 @@ void CapKingdom::CreatePlayer()
 
 void CapKingdom::CreateEnemies()
 {
-	for (int i{}; i < 3; i++)
+	auto coinReader = LocationReader("bills.txt");
+	auto locations = coinReader.ReadLocations();
+
+	for (auto loc : locations)
 	{
 		auto bill = AddChild(new BanzaiBill(m_pMarioComponent));
-		bill->GetTransform()->Translate((float)i * 400, 2, 0);
+		bill->GetTransform()->Translate(loc.x, loc.y + 1, loc.z);
 
 		bill->SetOnDeathCallback([this, bill]() {
 			//Remove from m_Bills
-				auto it = std::find(begin(m_Bills), end(m_Bills), bill);
+			auto it = std::find(begin(m_Bills), end(m_Bills), bill);
 			m_Bills.erase(it);
 			});
 
@@ -618,7 +641,8 @@ void CapKingdom::CreateSkyBox()
 void CapKingdom::ClearAudio()
 {
 	m_pBackgroundMusic->setPaused(true);
-	m_pChannel3D->setPaused(true);
+	m_pChannel3DBills->setPaused(true);
+	m_pChannel3DExplosion->setPaused(true);
 }
 
 #ifdef _DEBUG
@@ -661,5 +685,37 @@ void CapKingdom::UpdatePostProcess()
 	{
 		m_pPostProcessEffect->SetIsEnabled(false);
 	}
+}
+
+void CapKingdom::OnAllMoonsCollected()
+{
+	FMOD::Channel* pChannel;
+	SoundManager::Get()->GetSystem()->playSound(m_pWonSound, nullptr, false, &pChannel);
+	pChannel->setVolume(0.7f);
+
+	m_pChannel3DBills->setPaused(true);
+	m_pChannel3DExplosion->setPaused(true);
+	m_pBackgroundMusic->setPaused(true);
+
+	TimerManager::Get()->CreateTimer(13.f, [this]() {
+		m_pBackgroundMusic->setPaused(false);
+		m_pChannel3DBills->setPaused(false);
+		m_pChannel3DExplosion->setPaused(false);
+
+		SceneManager::Get()->PreviousScene();
+	});
+}
+
+void CapKingdom::OnMoonCollected()
+{
+	m_pChannel3DBills->setPaused(true);
+	m_pChannel3DExplosion->setPaused(true);
+	m_pBackgroundMusic->setPaused(true);
+
+	TimerManager::Get()->CreateTimer(3.5f, [this]() {
+		m_pBackgroundMusic->setPaused(false);
+		m_pChannel3DBills->setPaused(false);
+		m_pChannel3DExplosion->setPaused(false);
+	});
 }
 
