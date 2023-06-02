@@ -385,7 +385,7 @@ void Mario::InitializeSounds()
 	if (!m_pJumpSoundEffect)
 	{
 
-		SoundManager::Get()->GetSystem()->createStream("Resources/Sound/jump.wav", FMOD_DEFAULT, nullptr, &m_pJumpSoundEffect);
+		SoundManager::Get()->GetSystem()->createStream("Resources/Sound/jump.mp3", FMOD_DEFAULT, nullptr, &m_pJumpSoundEffect);
 		m_pJumpSoundEffect->setMode(FMOD_LOOP_OFF);
 
 	}

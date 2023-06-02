@@ -8,10 +8,12 @@ void SkyBox::Initialize(const SceneContext& )
 	auto skyBoxModel = new ModelComponent(L"Meshes/Box.ovm");
 
 	auto mat = MaterialManager::Get()->CreateMaterial<SkyboxMaterial>();
-	mat->SetTexture(L"Textures/SkyBox.dds");
+	mat->SetTexture(L"Textures/SkyBoxCustom.dds");
 
 	skyBoxModel->SetMaterial(mat);
 	skyBox->AddComponent(skyBoxModel);
+
+	skyBox->GetTransform()->Scale(1000, 1000, 1000);
 }
 
 void SkyBox::Update(const SceneContext& )

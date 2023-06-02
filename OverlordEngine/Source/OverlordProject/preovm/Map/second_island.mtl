@@ -1,0 +1,76 @@
+# Blender 3.3.5 MTL File: 'mario.blend'
+# www.blender.org
+
+newmtl StripeCamouflageSingleLayer00.005
+Ns 20.000006
+Ka 1.000000 1.000000 1.000000
+Ks 0.000000 0.000000 0.000000
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+illum 1
+map_Kd C:/dev/GPMilestone2/OverlordEngine/Source/OverlordProject/Resources/Meshes/StripeCamouflageSingleLayer00.004_diffuse.png
+map_d C:/Users/sixar/Downloads/CapKingdom/StripeCamouflage03_alb.png
+
+newmtl main_pelt
+Ns 20.000006
+Ka 1.000000 1.000000 1.000000
+Ks 0.000000 0.000000 0.000000
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+illum 1
+map_Kd C:/dev/GPMilestone2/OverlordEngine/Source/OverlordProject/Resources/Meshes/DazzleCamouflageSingleLayer.004_diffuse.png
+map_d C:/Users/sixar/Downloads/CapKingdom/DazzleCamouflage03_alb.png
+
+newmtl metal
+Ns 20.000006
+Ka 1.000000 1.000000 1.000000
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+illum 1
+map_Kd C:/dev/GPMilestone2/OverlordEngine/Source/OverlordProject/Resources/Meshes/MetalFence00.003_diffuse.png
+map_Ks C:/Users/sixar/Downloads/CapKingdom/MetalFence01_rgh.png
+map_d C:/Users/sixar/Downloads/CapKingdom/MetalFence01_alb.png
+map_Bump -bm 0.300000 C:/Users/sixar/Downloads/CapKingdom/MetalFence01_nrm.png
+
+newmtl pelt
+Ns 20.000006
+Ka 1.000000 1.000000 1.000000
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+illum 1
+map_Kd C:/dev/GPMilestone2/OverlordEngine/Source/OverlordProject/Resources/Meshes/StripeCamouflageSingleLayer00.004_diffuse.png
+map_Ks C:/Users/sixar/Downloads/CapKingdom/FeltHair01_rgh.png
+map_d C:/Users/sixar/Downloads/CapKingdom/FeltHair01_alb.png
+map_Bump -bm 0.300000 C:/Users/sixar/Downloads/CapKingdom/FeltHair01_nrm.png
+
+newmtl spot
+Ns 20.000006
+Ka 1.000000 1.000000 1.000000
+Ks 0.000000 0.000000 0.000000
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+illum 1
+map_Kd C:/dev/GPMilestone2/OverlordEngine/Source/OverlordProject/Resources/Meshes/StripeCamouflageSingleLayer00.004_diffuse.png
+map_d C:/Users/sixar/Downloads/CapKingdom/DazzleCamouflage03_alb.png
+
+newmtl stone
+Ns 20.000006
+Ka 1.000000 1.000000 1.000000
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+illum 1
+map_Kd C:/dev/GPMilestone2/OverlordEngine/Source/OverlordProject/Resources/Meshes/WallStone00.004_diffuse.png
+map_Ks C:/Users/sixar/Downloads/CapKingdom/WallStone00_rgh.png
+map_d C:/Users/sixar/Downloads/CapKingdom/WallStone00_alb.png
+map_Bump -bm 0.300000 C:/Users/sixar/Downloads/CapKingdom/WallStone00_nrm.png
+
+newmtl wall
+Ns 20.000006
+Ka 1.000000 1.000000 1.000000
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+illum 1
+map_Kd C:/dev/GPMilestone2/OverlordEngine/Source/OverlordProject/Resources/Meshes/WallStone00.004_diffuse.png
+map_Ks C:/Users/sixar/Downloads/CapKingdom/WallBrick00_rgh.png
+map_d C:/Users/sixar/Downloads/CapKingdom/WallBrick00_alb.png
+map_Bump -bm 0.300000 C:/Users/sixar/Downloads/CapKingdom/WallBrick00_nrm.png

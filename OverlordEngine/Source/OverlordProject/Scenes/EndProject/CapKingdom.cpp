@@ -417,25 +417,23 @@ void CapKingdom::CreateSecondIsland()
 	// Load model
 	const auto pModel = new ModelComponent(L"Meshes/second_island.ovm");
 	pModel->SetMaterial(pStoneWallMaterial, 0);
-	pModel->SetMaterial(pStripes, 1);
+	pModel->SetMaterial(pDazzleMaterial, 1);
 	pModel->SetMaterial(pBrickWallMaterial, 2);
-	pModel->SetMaterial(pDazzleMaterial, 3);
-	pModel->SetMaterial(pMetalFenceMaterial, 4);
-	pModel->SetMaterial(pStripes, 5);
+	pModel->SetMaterial(pStripes, 3);
+	pModel->SetMaterial(pDazzleMaterial, 4);
+	pModel->SetMaterial(pMetalFenceMaterial, 5);
+	pModel->SetMaterial(pStripes, 6);
 
 	// Setup physics
 	const auto pRigidBodyMesh = new RigidBodyComponent(true);
 	pRigidBodyMesh->SetKinematic(true);
 	auto pDefaultMat = PxGetPhysics().createMaterial(0.5f, 0.5f, 0.8f);
-	auto* pTriangleFloorGeo = ContentManager::Load<PxTriangleMesh>(L"Meshes/second_island_collision_floor.ovpt");
+	auto* pTriangleFloorGeo = ContentManager::Load<PxTriangleMesh>(L"Meshes/second_island_collision.ovpt");
 	//auto* pTriangleWallsGeo = ContentManager::Load<PxTriangleMesh>(L"Meshes/first_island_collision_walls.ovpt");
 
 
 	pRigidBodyMesh->AddCollider(PxTriangleMeshGeometry{ pTriangleFloorGeo }, *pDefaultMat);
 	//pRigidBodyMesh->AddCollider(PxTriangleMeshGeometry{ pTriangleWallsGeo }, *pDefaultMat);
-
-
-	entrance->GetTransform()->Rotate(90, 0, 0);
 
 	entrance->AddComponent(pModel);
 	entrance->AddComponent(pRigidBodyMesh);
