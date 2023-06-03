@@ -4,8 +4,8 @@
 #include "Materials/Shadow/DiffuseMaterial_Shadow.h"
 #include "Materials/Shadow/DiffuseMaterial_Shadow_Skinned.h"
 
-#include "Prefabs/Character.h"
-#include "Prefabs/Mario.h"
+#include "Prefabs/Player/Character.h"
+#include "Prefabs/Player/Mario.h"
 
 void ShadowMappingScene::Initialize()
 {

@@ -1,5 +1,5 @@
 #pragma once
-class MenuItem : public GameObject
+class MenuItem final: public GameObject
 {
 public:
 	MenuItem(const std::string& name);

@@ -14,6 +14,7 @@ void PauseMenu::Initialize(const SceneContext& sceneContext)
 	// SHOULD BE INACTIVE BY DEFAULT
 	SetActive(false);
 
+	// Add background
 	auto bg = AddChild(new GameObject());
 
 	bg->AddComponent(new SpriteComponent(L"Textures/Hud/pause_screen.png", { 0.5f,0.5f }, { 1.f,1.f,1.f,.5f }));
@@ -27,6 +28,7 @@ void PauseMenu::Initialize(const SceneContext& sceneContext)
 		m_pMenuSelect->set3DMinMaxDistance(0.f, 100.f);
 	}
 
+	// Input
 	auto inputAction = InputAction(PauseMenuOptions::Accept, InputState::pressed, VK_SPACE, -1, XINPUT_GAMEPAD_A);
 	sceneContext.pInput->AddInputAction(inputAction);
 
@@ -63,6 +65,7 @@ void PauseMenu::Update(const SceneContext& sceneContext)
 {
 	if (!IsActive()) return;
 
+	// Set button selected or unselected
 	for (size_t i{}; i < m_pButtons.size(); i++)
 	{
 		if (i == m_CurrentButtonIdx)
@@ -75,6 +78,7 @@ void PauseMenu::Update(const SceneContext& sceneContext)
 		}
 	}
 
+	// Check if button is pressed
 	if (sceneContext.pInput->IsActionTriggered(PauseMenuOptions::Accept))
 	{
 		switch (m_CurrentButtonIdx)

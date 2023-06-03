@@ -25,11 +25,11 @@
     <ClCompile Include="Scenes\Week 7\FontTestScene.cpp" />
     <ClCompile Include="Scenes\Week 7\PickingScene.cpp" />
     <ClCompile Include="Scenes\Week 7\CharacterScene.cpp" />
-    <ClCompile Include="Prefabs\Character.cpp" />
+    <ClCompile Include="Prefabs\Player\Character.cpp" />
     <ClCompile Include="Scenes\Week 8\ShadowMappingScene.cpp" />
     <ClCompile Include="Materials\Shadow\DiffuseMaterial_Shadow.cpp" />
     <ClCompile Include="Materials\Shadow\DiffuseMaterial_Shadow_Skinned.cpp" />
-    <ClCompile Include="Prefabs\Mario.cpp" />
+    <ClCompile Include="Prefabs\Player\Mario.cpp" />
     <ClCompile Include="Scenes\Week 9\ParticleScene.cpp" />
     <ClCompile Include="Scenes\Week 10\PostProcessingScene.cpp" />
     <ClCompile Include="Materials\Post\PostGrayscale.cpp" />
@@ -44,13 +44,15 @@
     <ClCompile Include="Materials\Post\PostVignette.cpp" />
     <ClCompile Include="Utils\TimerManager.cpp" />
     <ClCompile Include="Prefabs\Collectibles\Coin.cpp" />
-    <ClCompile Include="Prefabs\Collectibles\RegionalCoin.cpp" />
     <ClCompile Include="Prefabs\Collectibles\Moon.cpp" />
     <ClCompile Include="Utils\LocationWriter.cpp" />
     <ClCompile Include="Materials\SkyboxMaterial.cpp" />
     <ClCompile Include="Prefabs\SkyBox\SkyBox.cpp" />
     <ClCompile Include="Prefabs\PauseMenu\PauseMenu.cpp" />
     <ClCompile Include="Prefabs\Enemies\BanzaiBillLauncher.cpp" />
+    <ClCompile Include="Prefabs\Map\FirstIsland.cpp" />
+    <ClCompile Include="Prefabs\Map\SecondIsland.cpp" />
+    <ClCompile Include="Materials\Shadow\UberMaterial_Shadow.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="MainGame.h" />
@@ -77,11 +79,11 @@
     <ClInclude Include="Scenes\Week 7\FontTestScene.h" />
     <ClInclude Include="Scenes\Week 7\PickingScene.h" />
     <ClInclude Include="Scenes\Week 7\CharacterScene.h" />
-    <ClInclude Include="Prefabs\Character.h" />
+    <ClInclude Include="Prefabs\Player\Character.h" />
     <ClInclude Include="Scenes\Week 8\ShadowMappingScene.h" />
     <ClInclude Include="Materials\Shadow\DiffuseMaterial_Shadow_Skinned.h" />
     <ClInclude Include="Materials\Shadow\DiffuseMaterial_Shadow.h" />
-    <ClInclude Include="Prefabs\Mario.h" />
+    <ClInclude Include="Prefabs\Player\Mario.h" />
     <ClInclude Include="Utils\AnimationUtils.h" />
     <ClInclude Include="Scenes\Week 9\ParticleScene.h" />
     <ClInclude Include="Scenes\Week 10\PostProcessingScene.h" />
@@ -97,12 +99,14 @@
     <ClInclude Include="Materials\Post\PostVignette.h" />
     <ClInclude Include="Utils\TimerManager.h" />
     <ClInclude Include="Prefabs\Collectibles\Coin.h" />
-    <ClInclude Include="Prefabs\Collectibles\RegionalCoin.h" />
     <ClInclude Include="Prefabs\Collectibles\Moon.h" />
     <ClInclude Include="Utils\LocationWriter.h" />
     <ClInclude Include="Materials\SkyboxMaterial.h" />
     <ClInclude Include="Prefabs\SkyBox\SkyBox.h" />
     <ClInclude Include="Prefabs\PauseMenu\PauseMenu.h" />
     <ClInclude Include="Prefabs\Enemies\BanzaiBillLauncher.h" />
+    <ClInclude Include="Prefabs\Map\FirstIsland.h" />
+    <ClInclude Include="Prefabs\Map\SecondIsland.h" />
+    <ClInclude Include="Materials\Shadow\UberMaterial_Shadow.h" />
   </ItemGroup>
 </Project>

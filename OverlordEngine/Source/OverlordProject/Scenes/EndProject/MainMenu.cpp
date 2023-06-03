@@ -12,6 +12,7 @@ void MainMenu::Initialize()
 	m_pBackground->AddComponent(new SpriteComponent(L"Textures/main_menu.png", { 0.5f,0.5f }, { 1.f,1.f,1.f,.5f }));
 	AddChild(m_pBackground);
 
+	// Place in middle of screen
 	m_pBackground->GetTransform()->Translate(m_SceneContext.windowWidth / 2.f, m_SceneContext.windowHeight / 2.f, .9f);
 	m_pBackground->GetTransform()->Scale(1.f, 1.f, 1.f);
 
@@ -24,10 +25,6 @@ void MainMenu::Initialize()
 	inputAction = InputAction(MenuOptions::Up, InputState::pressed, VK_UP, -1, XINPUT_GAMEPAD_DPAD_UP);
 	m_SceneContext.pInput->AddInputAction(inputAction);
 
-	////////////////////////////////////////////////////////////
-	// Music
-	////////////////////////////////////////////////////////////
-	
 
 	//////////////////////////////////////////////////////////////
 	// Menu items
@@ -45,6 +42,7 @@ void MainMenu::Initialize()
 
 void MainMenu::Update()
 {
+	// Load audio
 	if (!m_isAudioLoaded)
 	{
 		if (!m_pMenuIntro)
@@ -74,6 +72,7 @@ void MainMenu::Update()
 		m_isAudioLoaded = true;
 	}
 
+	// Play menu loop after intro
 	if (m_IsIntroPlaying)
 	{
 		unsigned int currentPosition{};
@@ -90,6 +89,7 @@ void MainMenu::Update()
 		}
 	}
 
+	// Set buttons active/inactive
 	for (size_t i{}; i < m_pButtons.size(); i++)
 	{
 		if (i == m_CurrentButtonIdx)
@@ -102,6 +102,7 @@ void MainMenu::Update()
 		}
 	}
 
+	// Handle input
 	if (m_SceneContext.pInput->IsActionTriggered(MenuOptions::Play))
 	{
 		switch (m_CurrentButtonIdx)

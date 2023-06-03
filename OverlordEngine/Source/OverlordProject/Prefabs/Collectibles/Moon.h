@@ -1,5 +1,5 @@
 #pragma once
-class Moon : public GameObject
+class Moon final : public GameObject
 {
 public:
 	Moon() = default;
@@ -20,7 +20,7 @@ private:
 	GameObject* m_pVisuals{};
 
 	float m_Angle{};
-	float m_Oscelator{};
+	float m_Oscillator{};
 
 	bool m_MarkedForDestruction{ false };
 	bool m_HasCallbackTriggered{ false };

@@ -1,37 +1,55 @@
 #include "stdafx.h"
+#include <array>
 #include "CapKingdom.h"
+
 #include "Materials/DiffuseMaterial.h"
 #include "Materials/ColorMaterial.h"
 #include "Materials/UberMaterial.h"
-#include "Utils/ClipboardUtil.h"
-#include "Prefabs/Mario.h"
-#include "Prefabs/Character.h"
-#include "Prefabs/Enemies/BanzaiBill.h"
 #include "Materials/Post/PostVignette.h"
-#include "Prefabs/Hud/GameHud.h"
+#include "Materials/Shadow/DiffuseMaterial_Shadow.h"
+
+#include "Utils/ClipboardUtil.h"
 #include <Utils/TimerManager.h>
 #include "Utils/LocationWriter.h"
+
+#include "Prefabs/Hud/GameHud.h"
+#include "Prefabs/Player/Mario.h"
+#include "Prefabs/Enemies/BanzaiBill.h"
+#include "Prefabs/Player/Character.h"
 #include "Prefabs/Collectibles/Coin.h"
 #include "Prefabs/Collectibles/Moon.h"
 #include "Prefabs/SkyBox/SkyBox.h"
 #include "Prefabs/PauseMenu/PauseMenu.h"
 #include "Prefabs/Enemies/BanzaiBillLauncher.h"
-#include <array>
-
-#include "Materials/Shadow/DiffuseMaterial_Shadow.h"
+#include "Prefabs/Map/FirstIsland.h"
+#include "Prefabs/Map/SecondIsland.h"
 
 CapKingdom::~CapKingdom()
 {
+	// Clean up timerManager singleton
 	if (TimerManager::Get() != nullptr)
 	{
 		TimerManager::Destroy();
 	}
 }
 
+// Bullet will remove itself to audio listener list
+void CapKingdom::RemoveBulletBill(BanzaiBill* bill)
+{
+	auto it = std::find(begin(m_Bills), end(m_Bills), bill);
+	m_Bills.erase(it);
+}
+
+// Bullet will add itself to audio listener list
+void CapKingdom::AddBulletBill(BanzaiBill* bill)
+{
+	m_Bills.push_back(bill);
+} 
+
 void CapKingdom::Initialize()
 {
+	// Create timerManager singleton
 	TimerManager::Create();
-
 
 	if (m_IsInitialized)
 	{
@@ -61,13 +79,12 @@ void CapKingdom::Initialize()
 		m_SceneContext.pLights->SetDirectionalLight({ -95.6139526f,66.1346436f,-41.1850471f }, { 0.740129888f, -0.597205281f, 0.309117377f });
 		m_SceneContext.pInput->AddInputAction(InputAction(0, InputState::pressed, VK_DELETE));
 
+		// Debug writing to save file
 #ifdef _DEBUG
 		inputAction = InputAction(1000, InputState::pressed, VK_SPACE, -1, XINPUT_GAMEPAD_B);
 		m_SceneContext.pInput->AddInputAction(inputAction);
 #endif // _DEBUG
 	}
-	
-
 
 	CreateMap();
 	CreatePlayer();
@@ -75,60 +92,56 @@ void CapKingdom::Initialize()
 	CreateHud();
 	CreateSkyBox();
 	CreatePauseMenu();
+	CreateCollectibles();
+	CreateEnemies();
 
-
-
+	// Create debug save file writer
 #ifdef _DEBUG
 	CreateLocationWriter();
 #endif // _DEBUG
-	CreateCollectibles();
-
-
-	CreateEnemies();
 }
 
 void CapKingdom::Update()
 {
-	if (m_BillsToAdd.size() > 0) 
-	{
-		for (auto bill : m_BillsToAdd)
-		{
-			AddChild(bill);
-			m_Bills.push_back(bill);
-		}
-		m_BillsToAdd.clear();
-	}
+	// Move light with mario to make sure that shadowmap follows
+	const auto pCameraTransform = m_pMario->GetCharacterController()->GetTransform();
+	auto oldDirection = m_SceneContext.pLights->GetDirectionalLight().direction;
+	m_SceneContext.pLights->SetDirectionalLight(pCameraTransform->GetWorldPosition(), XMFLOAT3{oldDirection.x, oldDirection.y, oldDirection.z});
 
+	// Menu open logic
 	if (m_SceneContext.pInput->IsActionTriggered(PauseMenu::PauseMenuOptions::Open))
 	{
-		m_pPauseMenu->Toggle();
-		m_pHud->Toggle();
+		// Pause menu will show and hud will hide first time
+		m_pPauseMenu->Toggle(); //  default is false
+		m_pHud->Toggle(); // default is true
 
 		if (m_pPauseMenu->IsActive())
 		{
 			m_SceneContext.pGameTime->Stop();
-			m_pBackgroundMusic->setPaused(true);
+			m_pChannelBackgroundMusic->setPaused(true);
 			m_pChannel3DBills->setPaused(true);
 			m_IsPaused = true;
 		}
 		else
 		{
 			m_SceneContext.pGameTime->Start();
-			m_pBackgroundMusic->setPaused(false);
+			m_pChannelBackgroundMusic->setPaused(false);
 			m_pChannel3DBills->setPaused(false);
 			m_IsPaused = false;
 		}
 	}
 
+	// Prevent level update if game is paused
 	if (m_IsPaused) return;
 
+	// Location writing logic.
 #ifdef _DEBUG
 	if (m_SceneContext.pInput->IsActionTriggered(1000))
 	{
 		std::cout << "writing location data" << std::endl;
-		m_LocationWriter.WriteLocation(m_pMarioComponent->GetCharacterController()->GetTransform()->GetWorldPosition());
+		m_LocationWriter.WriteLocation(m_pMario->GetCharacterController()->GetTransform()->GetWorldPosition());
 
-		auto q = m_pMarioComponent->GetVisuals()->GetTransform()->GetWorldRotation();
+		auto q = m_pMario->GetVisuals()->GetTransform()->GetWorldRotation();
 		XMFLOAT3 angles{};
 
 
@@ -145,30 +158,23 @@ void CapKingdom::Update()
 	}
 #endif // _DEBUG
 
-	
-
+	// Start the audio if it hasn't started yet
 	if (!m_HasStartedLevel)
 	{
 		InitSound();
 		m_HasStartedLevel = true;
 	}
 
-	UpdateAudioListeners();
-	UpdateHUDText();
-	UpdatePostProcess();
+	UpdateAudioListeners(); // Will be updating bills
+	UpdateHUDText(); // Will be updating coins, moons and lives
+	UpdatePostProcess(); // Will be updating the low health vignette
+
+	// Update the TimerManager.
 	TimerManager::Get()->Update(m_SceneContext.pGameTime->GetElapsedReal());
-}
-
-void CapKingdom::Draw()
-{
-
-
 }
 
 void CapKingdom::PostDraw()
 {
-	if (m_IsPaused) return;
-
 	if (m_DrawShadowMap)
 	{
 		ShadowMapRenderer::Get()->Debug_DrawDepthSRV({ m_SceneContext.windowWidth - 10.f, 10.f }, { m_ShadowMapScale, m_ShadowMapScale }, { 1.f,0.f });
@@ -177,16 +183,17 @@ void CapKingdom::PostDraw()
 
 void CapKingdom::OnSceneActivated()
 {
+	// This will only run the 2nd time the scene is re-activated.
 	if (!m_IsInitialized)
 	{
 		Initialize();
+		m_pMario->PostInitialize(m_SceneContext);
 	}
-
-	m_pMarioComponent->PostInitialize(m_SceneContext);
 }
 
 void CapKingdom::OnSceneDeactivated()
 {
+	// Cleanup scene
 	m_SceneContext.pCamera->SetActive(false);
 
 	for (size_t i{m_pChildren.size() - 1}; i >= 1; --i)
@@ -207,16 +214,14 @@ void CapKingdom::OnSceneDeactivated()
 void CapKingdom::OnGUI()
 {
 	GameScene::OnGUI();
-	
-	m_DebugMaterial->DrawImGui();
-	m_pMarioComponent->DrawImGui();
 
 	ImGui::DragFloat3("direction", &m_LightDirection.x, 0.1f, -1.f, 1.f);
-	m_SceneContext.pLights->SetDirectionalLight(m_pMarioComponent->GetTransform()->GetWorldPosition(), m_LightDirection);
+	m_SceneContext.pLights->SetDirectionalLight(m_pMario->GetTransform()->GetWorldPosition(), m_LightDirection);
 
 	ImGui::Checkbox("Draw ShadowMap", &m_DrawShadowMap);
 	ImGui::SliderFloat("ShadowMap Scale", &m_ShadowMapScale, 0.f, 1.f);
 
+	// Debug file chooser for data
 #ifdef _DEBUG
 	ImGui::InputText("Input", m_FileToSaveTo.data(), ImGuiInputTextFlags_EnterReturnsTrue);
 	ImGui::Text("using %s", m_FileToSaveTo.data());
@@ -232,23 +237,25 @@ void CapKingdom::OnGUI()
 
 void CapKingdom::InitSound()
 {
+	// Init the background music
+	SoundManager::Get()->GetSystem()->createStream("Resources/Sound/level_theme.mp3", FMOD_DEFAULT, nullptr, &m_pLevelMusic);
+	m_pLevelMusic->setMode(FMOD_LOOP_NORMAL);
+	m_pLevelMusic->set3DMinMaxDistance(0.f, 100.f);
 
-	SoundManager::Get()->GetSystem()->createStream("Resources/Sound/altar_cave.mp3", FMOD_DEFAULT, nullptr, &m_pSound);
-	m_pSound->setMode(FMOD_LOOP_NORMAL);
-	m_pSound->set3DMinMaxDistance(0.f, 100.f);
+	// Play background music
+	SoundManager::Get()->GetSystem()->playSound(m_pLevelMusic, nullptr, false, &m_pChannelBackgroundMusic);
+	m_pChannelBackgroundMusic->setVolume(0.1f);
 
-
-	SoundManager::Get()->GetSystem()->playSound(m_pSound, nullptr, false, &m_pBackgroundMusic);
-	m_pBackgroundMusic->setVolume(0.1f);
-
-
+	// Init the 3D sounds
 	auto result = SoundManager::Get()->GetSystem()->createStream("Resources/Sound/rocket.mp3", FMOD_3D | FMOD_3D_LINEARROLLOFF, 0, &m_pRocketSound);
 	result = SoundManager::Get()->GetSystem()->createStream("Resources/Sound/explosion.mp3", FMOD_3D | FMOD_3D_LINEARROLLOFF, 0, &m_pExplosionSound);
 	result = SoundManager::Get()->GetSystem()->createStream("Resources/Sound/won.mp3", FMOD_DEFAULT, 0, &m_pWonSound);
 
+	// Start the 3D audio players
 	result = SoundManager::Get()->GetSystem()->playSound(m_pRocketSound, nullptr, false, &m_pChannel3DBills);
 	result = SoundManager::Get()->GetSystem()->playSound(m_pExplosionSound, nullptr, false, &m_pChannel3DExplosion);
 
+	// Configure 3D audio players
 	m_pChannel3DBills->setMode(FMOD_LOOP_NORMAL);
 	m_pChannel3DBills->setVolume(0.3f);
 	m_pChannel3DBills->set3DMinMaxDistance(1.f, 200.f);
@@ -260,12 +267,9 @@ void CapKingdom::InitSound()
 
 void CapKingdom::OnGameOver()
 {
-	std::cout << "Dead Timer started" << std::endl;
+	// Exit level after 3 seconds.
 	TimerManager::Get()->CreateTimer(3.f, [this]() {
-		std::cout << "Mario has died" << std::endl;
-
 		m_pPostProcessEffect->SetIsEnabled(false);
-
 		SceneManager::Get()->PreviousScene();
 	});
 }
@@ -282,11 +286,11 @@ inline FMOD_VECTOR ToFMod(PxVec3 v)
 
 void CapKingdom::UpdateAudioListeners()
 {
-	auto marioPos = m_pMarioComponent->GetCharacterController();
+	auto playerPosition = m_pMario->GetCharacterController();
 
-	auto pos = ToFMod(marioPos->GetTransform()->GetWorldPosition());
-	auto forward = ToFMod(marioPos->GetTransform()->GetForward());
-	auto up = ToFMod(marioPos->GetTransform()->GetUp());
+	auto pos = ToFMod(playerPosition->GetTransform()->GetWorldPosition());
+	auto forward = ToFMod(playerPosition->GetTransform()->GetForward());
+	auto up = ToFMod(playerPosition->GetTransform()->GetUp());
 
 	FMOD_VECTOR vel{};
 	auto dt = m_SceneContext.pGameTime->GetElapsed();
@@ -297,8 +301,17 @@ void CapKingdom::UpdateAudioListeners()
 
 	SoundManager::Get()->GetSystem()->set3DListenerAttributes(0, &pos, &vel, &forward, &up);
 
-	// source
+	// Mute bill audio when no bills are flying
+	if (m_Bills.empty())
+	{
+		m_pChannel3DBills->setPaused(true);
+	}
+	else
+	{
+		m_pChannel3DBills->setPaused(false);
+	}
 
+	// Update bill audio
 	for (auto bill : m_Bills)
 	{
 		auto spherePos = ToFMod(bill->GetTransform()->GetWorldPosition());
@@ -311,269 +324,41 @@ void CapKingdom::UpdateAudioListeners()
 			SoundManager::Get()->GetSystem()->playSound(m_pExplosionSound, nullptr, false, &m_pChannel3DExplosion);
 		}
 	}
-	
 }
 
 void CapKingdom::CreateMap()
 {
-	CreateFirstIsland();
-	CreateSecondIsland();
-	CreateBridge();
-}
-
-void CapKingdom::CreateFirstIsland()
-{
-	GameObject* entrance = new GameObject();
-
-	float normalStrength = 0.4f;
-
-	// Setup textures
-	UberMaterial* pStoneWallMaterial = MaterialManager::Get()->CreateMaterial<UberMaterial>();
-	pStoneWallMaterial->SetDiffuseTexture(L"Meshes/WallStone00.004_diffuse.png");
-	pStoneWallMaterial->SetNormalTexture(L"Meshes/WallStone00.004_normal.png");
-	pStoneWallMaterial->SetSpecularTexture(L"Meshes/WallStone00.004_spec.png");
-	pStoneWallMaterial->SetNormalStrength(normalStrength);
-	pStoneWallMaterial->SetVariable_Scalar(L"gUseSpecularPhong", false);
-	pStoneWallMaterial->SetVariable_Scalar(L"gUseSpecularBlinn", false);
-
-	UberMaterial* pBrickWallMaterial = MaterialManager::Get()->CreateMaterial<UberMaterial>();
-	pBrickWallMaterial->SetDiffuseTexture(L"Meshes/WallBrick00.005_diffuse.png");
-	pBrickWallMaterial->SetNormalTexture(L"Meshes/WallBrick00.005_normal.png");
-	pBrickWallMaterial->SetSpecularTexture(L"Meshes/WallBrick00.005_spec.png");
-	pBrickWallMaterial->SetNormalStrength(normalStrength);
-	pBrickWallMaterial->SetVariable_Scalar(L"gUseSpecularPhong", false);
-	pBrickWallMaterial->SetVariable_Scalar(L"gUseSpecularBlinn", false);
-
-	m_DebugMaterial = pBrickWallMaterial;
-
-	DiffuseMaterial_Shadow* pStripes = MaterialManager::Get()->CreateMaterial<DiffuseMaterial_Shadow>();
-	pStripes->SetDiffuseTexture(L"Meshes/StripeCamouflageSingleLayer00.004_diffuse.png");
-
-	UberMaterial* pMetalFenceMaterial = MaterialManager::Get()->CreateMaterial<UberMaterial>();
-	pMetalFenceMaterial->SetDiffuseTexture(L"Meshes/MetalFence01.004_diffuse.png");
-	pMetalFenceMaterial->SetNormalTexture(L"Meshes/MetalFence01.004_normal.png");
-	pMetalFenceMaterial->SetSpecularTexture(L"Meshes/MetalFence01.004_spec.png");
-
-	UberMaterial* pLampMetalMaterial = MaterialManager::Get()->CreateMaterial<UberMaterial>();
-	pLampMetalMaterial->SetDiffuseTexture(L"Meshes/LampMetal00.003_diffuse.png");
-	pLampMetalMaterial->SetNormalTexture(L"Meshes/LampMetal00.003_normal.png");
-	pLampMetalMaterial->SetSpecularTexture(L"Meshes/LampMetal00.003_spec.png");
-
-	UberMaterial* pHatMetalMaterial = MaterialManager::Get()->CreateMaterial<UberMaterial>();
-	pHatMetalMaterial->SetDiffuseTexture(L"Meshes/HatMetal03.003_diffuse.png");
-	pHatMetalMaterial->SetNormalTexture(L"Meshes/HatMetal03.003_normal.png");
-
-	DiffuseMaterial_Shadow* pDazzleMaterial = MaterialManager::Get()->CreateMaterial<DiffuseMaterial_Shadow>();
-	pDazzleMaterial->SetDiffuseTexture(L"Meshes/DazzleCamouflageSingleLayer.004_diffuse.png");
-
-	// Load model
-	const auto pModel = new ModelComponent(L"Meshes/first_island.ovm");
-	pModel->SetMaterial(pStoneWallMaterial, 0);
-	pModel->SetMaterial(pBrickWallMaterial, 1);
-	pModel->SetMaterial(pStripes, 2);
-	pModel->SetMaterial(pMetalFenceMaterial, 3);
-	pModel->SetMaterial(pLampMetalMaterial, 4);
-	pModel->SetMaterial(pHatMetalMaterial, 5);
-	pModel->SetMaterial(pDazzleMaterial, 6);
-
-	// Setup physics
-	const auto pRigidBodyMesh = new RigidBodyComponent(true);
-	pRigidBodyMesh->SetKinematic(true);
-	auto pDefaultMat = PxGetPhysics().createMaterial(0.5f, 0.5f, 0.8f);
-	auto* pTriangleFloorGeo = ContentManager::Load<PxTriangleMesh>(L"Meshes/first_island_collision_floor.ovpt");
-	auto* pTriangleWallsGeo = ContentManager::Load<PxTriangleMesh>(L"Meshes/first_island_collision_walls.ovpt");
-
-
-	pRigidBodyMesh->AddCollider(PxTriangleMeshGeometry{ pTriangleFloorGeo }, *pDefaultMat);
-	pRigidBodyMesh->AddCollider(PxTriangleMeshGeometry{ pTriangleWallsGeo }, *pDefaultMat);
-
-
-
-	entrance->AddComponent(pModel);
-	entrance->AddComponent(pRigidBodyMesh);
-
-	entrance->GetTransform()->Rotate(90, 0, 0);
-
-	AddChild(entrance);
-
-	m_CustomObjects.push_back(entrance);
-}
-
-void CapKingdom::CreateSecondIsland()
-{
-	GameObject* entrance = new GameObject();
-
-	float normalStrength = 0.4f;
-
-	// Setup textures
-	UberMaterial* pStoneWallMaterial = MaterialManager::Get()->CreateMaterial<UberMaterial>();
-	pStoneWallMaterial->SetDiffuseTexture(L"Meshes/WallStone00.004_diffuse.png");
-	pStoneWallMaterial->SetNormalTexture(L"Meshes/WallStone00.004_normal.png");
-	pStoneWallMaterial->SetSpecularTexture(L"Meshes/WallStone00.004_spec.png");
-	pStoneWallMaterial->SetNormalStrength(normalStrength);
-	pStoneWallMaterial->SetVariable_Scalar(L"gUseSpecularPhong", false);
-	pStoneWallMaterial->SetVariable_Scalar(L"gUseSpecularBlinn", false);
-
-	UberMaterial* pBrickWallMaterial = MaterialManager::Get()->CreateMaterial<UberMaterial>();
-	pBrickWallMaterial->SetDiffuseTexture(L"Meshes/WallBrick00.005_diffuse.png");
-	pBrickWallMaterial->SetNormalTexture(L"Meshes/WallBrick00.005_normal.png");
-	pBrickWallMaterial->SetSpecularTexture(L"Meshes/WallBrick00.005_spec.png");
-	pBrickWallMaterial->SetNormalStrength(normalStrength);
-	pBrickWallMaterial->SetVariable_Scalar(L"gUseSpecularPhong", false);
-	pBrickWallMaterial->SetVariable_Scalar(L"gUseSpecularBlinn", false);
-
-	m_DebugMaterial = pBrickWallMaterial;
-
-	UberMaterial* pStripes = MaterialManager::Get()->CreateMaterial<UberMaterial>();
-	pStripes->SetDiffuseTexture(L"Meshes/StripeCamouflageSingleLayer00.004_diffuse.png");
-
-	UberMaterial* pMetalFenceMaterial = MaterialManager::Get()->CreateMaterial<UberMaterial>();
-	pMetalFenceMaterial->SetDiffuseTexture(L"Meshes/MetalFence01.004_diffuse.png");
-	pMetalFenceMaterial->SetNormalTexture(L"Meshes/MetalFence01.004_normal.png");
-	pMetalFenceMaterial->SetSpecularTexture(L"Meshes/MetalFence01.004_spec.png");
-
-	UberMaterial* pLampMetalMaterial = MaterialManager::Get()->CreateMaterial<UberMaterial>();
-	pLampMetalMaterial->SetDiffuseTexture(L"Meshes/LampMetal00.003_diffuse.png");
-	pLampMetalMaterial->SetNormalTexture(L"Meshes/LampMetal00.003_normal.png");
-	pLampMetalMaterial->SetSpecularTexture(L"Meshes/LampMetal00.003_spec.png");
-
-	UberMaterial* pHatMetalMaterial = MaterialManager::Get()->CreateMaterial<UberMaterial>();
-	pHatMetalMaterial->SetDiffuseTexture(L"Meshes/HatMetal03.003_diffuse.png");
-	pHatMetalMaterial->SetNormalTexture(L"Meshes/HatMetal03.003_normal.png");
-
-	UberMaterial* pDazzleMaterial = MaterialManager::Get()->CreateMaterial<UberMaterial>();
-	pDazzleMaterial->SetDiffuseTexture(L"Meshes/DazzleCamouflageSingleLayer.004_diffuse.png");
-
-	// Load model
-	const auto pModel = new ModelComponent(L"Meshes/second_island.ovm");
-	pModel->SetMaterial(pStoneWallMaterial, 0);
-	pModel->SetMaterial(pDazzleMaterial, 1);
-	pModel->SetMaterial(pBrickWallMaterial, 2);
-	pModel->SetMaterial(pStripes, 3);
-	pModel->SetMaterial(pDazzleMaterial, 4);
-	pModel->SetMaterial(pMetalFenceMaterial, 5);
-	pModel->SetMaterial(pStripes, 6);
-
-	// Setup physics
-	const auto pRigidBodyMesh = new RigidBodyComponent(true);
-	pRigidBodyMesh->SetKinematic(true);
-	auto pDefaultMat = PxGetPhysics().createMaterial(0.5f, 0.5f, 0.8f);
-	auto* pTriangleFloorGeo = ContentManager::Load<PxTriangleMesh>(L"Meshes/second_island_collision.ovpt");
-	//auto* pTriangleWallsGeo = ContentManager::Load<PxTriangleMesh>(L"Meshes/first_island_collision_walls.ovpt");
-
-
-	pRigidBodyMesh->AddCollider(PxTriangleMeshGeometry{ pTriangleFloorGeo }, *pDefaultMat);
-	//pRigidBodyMesh->AddCollider(PxTriangleMeshGeometry{ pTriangleWallsGeo }, *pDefaultMat);
-
-	entrance->AddComponent(pModel);
-	entrance->AddComponent(pRigidBodyMesh);
-
-	AddChild(entrance);
-
-	m_CustomObjects.push_back(entrance);
-
-}
-
-void CapKingdom::CreateBridge()
-{
-	GameObject* entrance = new GameObject();
-
-	float normalStrength = 0.4f;
-
-	// Setup textures
-	UberMaterial* pStoneWallMaterial = MaterialManager::Get()->CreateMaterial<UberMaterial>();
-	pStoneWallMaterial->SetDiffuseTexture(L"Meshes/WallStone00.004_diffuse.png");
-	pStoneWallMaterial->SetNormalTexture(L"Meshes/WallStone00.004_normal.png");
-	pStoneWallMaterial->SetSpecularTexture(L"Meshes/WallStone00.004_spec.png");
-	pStoneWallMaterial->SetNormalStrength(normalStrength);
-	pStoneWallMaterial->SetVariable_Scalar(L"gUseSpecularPhong", false);
-	pStoneWallMaterial->SetVariable_Scalar(L"gUseSpecularBlinn", false);
-
-	UberMaterial* pBrickWallMaterial = MaterialManager::Get()->CreateMaterial<UberMaterial>();
-	pBrickWallMaterial->SetDiffuseTexture(L"Meshes/WallBrick00.005_diffuse.png");
-	pBrickWallMaterial->SetNormalTexture(L"Meshes/WallBrick00.005_normal.png");
-	pBrickWallMaterial->SetSpecularTexture(L"Meshes/WallBrick00.005_spec.png");
-	pBrickWallMaterial->SetNormalStrength(normalStrength);
-	pBrickWallMaterial->SetVariable_Scalar(L"gUseSpecularPhong", false);
-	pBrickWallMaterial->SetVariable_Scalar(L"gUseSpecularBlinn", false);
-
-	m_DebugMaterial = pBrickWallMaterial;
-
-	UberMaterial* pStripes = MaterialManager::Get()->CreateMaterial<UberMaterial>();
-	pStripes->SetDiffuseTexture(L"Meshes/StripeCamouflageSingleLayer00.004_diffuse.png");
-
-	UberMaterial* pMetalFenceMaterial = MaterialManager::Get()->CreateMaterial<UberMaterial>();
-	pMetalFenceMaterial->SetDiffuseTexture(L"Meshes/MetalFence01.004_diffuse.png");
-	pMetalFenceMaterial->SetNormalTexture(L"Meshes/MetalFence01.004_normal.png");
-	pMetalFenceMaterial->SetSpecularTexture(L"Meshes/MetalFence01.004_spec.png");
-
-	UberMaterial* pLampMetalMaterial = MaterialManager::Get()->CreateMaterial<UberMaterial>();
-	pLampMetalMaterial->SetDiffuseTexture(L"Meshes/LampMetal00.003_diffuse.png");
-	pLampMetalMaterial->SetNormalTexture(L"Meshes/LampMetal00.003_normal.png");
-	pLampMetalMaterial->SetSpecularTexture(L"Meshes/LampMetal00.003_spec.png");
-
-	UberMaterial* pHatMetalMaterial = MaterialManager::Get()->CreateMaterial<UberMaterial>();
-	pHatMetalMaterial->SetDiffuseTexture(L"Meshes/HatMetal03.003_diffuse.png");
-	pHatMetalMaterial->SetNormalTexture(L"Meshes/HatMetal03.003_normal.png");
-
-	UberMaterial* pDazzleMaterial = MaterialManager::Get()->CreateMaterial<UberMaterial>();
-	pDazzleMaterial->SetDiffuseTexture(L"Meshes/DazzleCamouflageSingleLayer.004_diffuse.png");
-
-	// Load model
-	const auto pModel = new ModelComponent(L"Meshes/second_island_bridge.ovm");
-	pModel->SetMaterial(pBrickWallMaterial, 0);
-	pModel->SetMaterial(pDazzleMaterial, 1);
-	pModel->SetMaterial(pStoneWallMaterial, 2);
-	pModel->SetMaterial(pStripes, 3);
-	pModel->SetMaterial(pHatMetalMaterial, 4);
-	pModel->SetMaterial(pMetalFenceMaterial, 5);
-
-	// Setup physics
-	const auto pRigidBodyMesh = new RigidBodyComponent(true);
-	pRigidBodyMesh->SetKinematic(true);
-	auto pDefaultMat = PxGetPhysics().createMaterial(0.5f, 0.5f, 0.8f);
-	auto* pTriangleFloorGeo = ContentManager::Load<PxTriangleMesh>(L"Meshes/second_island_bridge_collision.ovpt");
-
-	pRigidBodyMesh->AddCollider(PxTriangleMeshGeometry{ pTriangleFloorGeo }, *pDefaultMat);
-
-	entrance->GetTransform()->Rotate(90, 0, 0);
-
-	entrance->AddComponent(pModel);
-	entrance->AddComponent(pRigidBodyMesh);
-
-	AddChild(entrance);
-
-	m_CustomObjects.push_back(entrance);
-
+	AddChild(new FirstIsland());
+	AddChild(new SecondIsland());
 }
 
 void CapKingdom::CreatePlayer()
 {
-	m_pMarioComponent = AddChild(new Mario(m_SceneContext));
-	m_pMarioComponent->SetLives(3);
+	m_pMario = AddChild(new Mario(m_SceneContext));
+	m_pMario->SetLives(3);
 
-	m_pMarioComponent->SetStartPosition(XMFLOAT3{ -550, 0, -553 });
+	m_pMario->SetStartPosition(XMFLOAT3{ -560, 0, -553 });
 
-	m_pMarioComponent->SetOnDieCallback([this]() 
+	m_pMario->SetOnDieCallback([this]() 
 		{
 			OnGameOver();
 		});
-	m_pMarioComponent->SetOnAllMoonsCallback([this]() {
+
+	m_pMario->SetOnAllMoonsCallback([this]() {
 
 			OnAllMoonsCollected();
 		});
-	m_pMarioComponent->SetOnMoonCallback([this]() {
+
+	m_pMario->SetOnMoonCallback([this]() {
 
 		OnMoonCollected();
 		
 	});
-
-	m_CustomObjects.push_back(m_pMarioComponent);
-
 }
 
 void CapKingdom::CreateEnemies()
 {
+	// Read location and rotation data from files.
 	auto billReader = LocationReader("spawndata/bills.txt");
 	auto locations = billReader.ReadLocations();
 	auto rotations = billReader.ReadRotations();
@@ -582,36 +367,11 @@ void CapKingdom::CreateEnemies()
 
 	for (auto loc : locations)
 	{
-		auto billLauncher = AddChild(new BanzaiBillLauncher(m_pMarioComponent));
+		auto billLauncher = AddChild(new BanzaiBillLauncher(m_pMario));
 		billLauncher->GetTransform()->Translate(loc.x, loc.y - 7.f, loc.z);
 
 		// Add for later rotation
 		launchers.push_back(billLauncher);
-
-		billLauncher->SetBillDeathCallback([this](BanzaiBill* bill) {
-			//Remove from m_Bills
-			auto it = std::find(begin(m_Bills), end(m_Bills), bill);
-			m_Bills.erase(it);
-		});
-
-		// Scene will handle bills
-		billLauncher->SetBillCreateCallback([this, billLauncher](BanzaiBill* bill) {
-
-			const float spawnDistance = 5.f;
-
-			XMFLOAT3 forward = bill->GetTransform()->GetForward();
-
-			auto spawnerPos = billLauncher->GetTransform()->GetWorldPosition();
-
-			bill->GetTransform()->Translate(
-				spawnerPos.x + forward.x * spawnDistance, 
-				spawnerPos.y + forward.y * spawnDistance, 
-				spawnerPos.z + forward.z * spawnDistance
-			);
-
-			m_BillsToAdd.push_back(bill);
-
-			});
 	}
 
 	// Apply rotations
@@ -624,24 +384,20 @@ void CapKingdom::CreateEnemies()
 void CapKingdom::CreateHud()
 {
 	m_pHud = AddChild(new GameHud());
-	m_CustomObjects.push_back(m_pHud);
 }
 
 void CapKingdom::CreatePauseMenu()
 {
 	m_pPauseMenu = AddChild(new PauseMenu());
-	m_CustomObjects.push_back(m_pPauseMenu);
 
-	m_pPauseMenu->SetOnRestartCallback([this]() {
-		// CLEANUP AUDIO
-
-		SceneManager::Get()->ReloadScene();
+	m_pPauseMenu->SetOnRestartCallback([this]()
+		{
+			SceneManager::Get()->ReloadScene();
 		});
 
-	m_pPauseMenu->SetOnMenuCallback([this]() {
-		// CLEANUP AUDIO
-
-		SceneManager::Get()->PreviousScene();
+	m_pPauseMenu->SetOnMenuCallback([this]() 
+		{
+			SceneManager::Get()->PreviousScene();
 		});
 
 	m_pPauseMenu->SetOnQuitCallback([]()
@@ -657,73 +413,53 @@ void CapKingdom::CreatePostProcessEffect()
 
 	m_pPostProcessEffect->SetIsEnabled(false);
 	reinterpret_cast<PostVignette*>(m_pPostProcessEffect)->SetRadius(1.1f);
-
 }
 
 void CapKingdom::CreateCollectibles()
 {
+	// Get location data from file.
 	auto coinReader = LocationReader("spawndata/coins.txt");
 	auto locations = coinReader.ReadLocations();
 
 	for (auto loc : locations)
 	{
 		auto coin = AddChild(new Coin());
-		m_CustomObjects.push_back(coin);
-
-
 		coin->GetTransform()->Translate(loc.x, loc.y + 1, loc.z);
 	}
 
+	// Get location data from file.
 	auto moonReader = LocationReader("spawndata/moons.txt");
 	locations = moonReader.ReadLocations();
 
 	for (auto loc : locations)
 	{
 		auto moon = AddChild(new Moon());
-		m_CustomObjects.push_back(moon);
-
 		moon->GetTransform()->Translate(loc.x, loc.y + 1, loc.z);
 	}
-
-
 }
 
 void CapKingdom::CreateSkyBox()
 {
-	auto skyBox = AddChild(new SkyBox());
-
-	m_CustomObjects.push_back(skyBox);
+	AddChild(new SkyBox());
 }
 
 void CapKingdom::ClearAudio()
 {
-	m_pBackgroundMusic->setPaused(true);
+	m_pChannelBackgroundMusic->setPaused(true);
 	m_pChannel3DBills->setPaused(true);
 	m_pChannel3DExplosion->setPaused(true);
 }
 
-#ifdef _DEBUG
-void CapKingdom::CreateLocationWriter()
-{
-	m_LocationWriter = LocationWriter("data.txt");
-}
-#endif
-
 void CapKingdom::UpdateHUDText()
 {
-	int coins = m_pMarioComponent->GetCoins();
-	m_pHud->SetCoins(coins);
-
-	m_pHud->SetSpecialCoins(m_pMarioComponent->GetSpecialCoins());
-
-	int lives = m_pMarioComponent->GetLives();
-	m_pHud->SetLives(lives);
-
-	m_pHud->SetMoons(m_pMarioComponent->GetMoons());
+	m_pHud->SetCoins(m_pMario->GetCoins());
+	m_pHud->SetLives(m_pMario->GetLives());
+	m_pHud->SetMoons(m_pMario->GetMoons());
 }
 
 void CapKingdom::UpdatePostProcess()
 {
+	// Sin wave will smoothly animate our post-process effect
 	m_SinWave += m_SceneContext.pGameTime->GetElapsed() * 2;
 
 	if (m_SinWave >= 3.1459f)
@@ -731,10 +467,10 @@ void CapKingdom::UpdatePostProcess()
 		m_SinWave = 0.f;
 	}
 
-
 	reinterpret_cast<PostVignette*>(m_pPostProcessEffect)->SetTime(m_SinWave);
 
-	if (m_pMarioComponent->GetLives() <= 1)
+	// Enable post process only when mario is low
+	if (m_pMario->GetLives() <= 1)
 	{
 		m_pPostProcessEffect->SetIsEnabled(true);
 	}
@@ -750,12 +486,14 @@ void CapKingdom::OnAllMoonsCollected()
 	SoundManager::Get()->GetSystem()->playSound(m_pWonSound, nullptr, false, &pChannel);
 	pChannel->setVolume(0.7f);
 
+	// Mute all other sounds while mario prefab plays its own sound
 	m_pChannel3DBills->setPaused(true);
 	m_pChannel3DExplosion->setPaused(true);
-	m_pBackgroundMusic->setPaused(true);
+	m_pChannelBackgroundMusic->setPaused(true);
 
+	// Unmute after x seconds;
 	TimerManager::Get()->CreateTimer(13.f, [this]() {
-		m_pBackgroundMusic->setPaused(false);
+		m_pChannelBackgroundMusic->setPaused(false);
 		m_pChannel3DBills->setPaused(false);
 		m_pChannel3DExplosion->setPaused(false);
 
@@ -765,14 +503,22 @@ void CapKingdom::OnAllMoonsCollected()
 
 void CapKingdom::OnMoonCollected()
 {
+	// Mute all other sounds while mario prefab plays its own sound
 	m_pChannel3DBills->setPaused(true);
 	m_pChannel3DExplosion->setPaused(true);
-	m_pBackgroundMusic->setPaused(true);
+	m_pChannelBackgroundMusic->setPaused(true);
 
+	// Unmute after x seconds;
 	TimerManager::Get()->CreateTimer(3.5f, [this]() {
-		m_pBackgroundMusic->setPaused(false);
+		m_pChannelBackgroundMusic->setPaused(false);
 		m_pChannel3DBills->setPaused(false);
 		m_pChannel3DExplosion->setPaused(false);
 	});
 }
 
+#ifdef _DEBUG
+void CapKingdom::CreateLocationWriter()
+{
+	m_LocationWriter = LocationWriter("data.txt");
+}
+#endif

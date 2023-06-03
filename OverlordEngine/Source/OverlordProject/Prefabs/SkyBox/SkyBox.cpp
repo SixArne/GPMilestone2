@@ -16,6 +16,3 @@ void SkyBox::Initialize(const SceneContext& )
 	skyBox->GetTransform()->Scale(1000, 1000, 1000);
 }
 
-void SkyBox::Update(const SceneContext& )
-{
-}

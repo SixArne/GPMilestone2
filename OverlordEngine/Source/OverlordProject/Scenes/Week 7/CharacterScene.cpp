@@ -1,9 +1,9 @@
 #include "stdafx.h"
 #include "CharacterScene.h"
 
-#include "Prefabs/Character.h"
 #include "Prefabs/CubePrefab.h"
-#include "Prefabs/Mario.h"
+#include "Prefabs/Player/Character.h"
+#include "Prefabs/Player/Mario.h"
 #include "Materials/ColorMaterial.h"
 
 void CharacterScene::Initialize()

@@ -1,10 +1,6 @@
 #include "stdafx.h"
 #include "GameHud.h"
 
-void GameHud::OnImGui()
-{
-}
-
 void GameHud::SetCoins(int coins)
 {
 	m_Coins = coins;
@@ -74,7 +70,9 @@ void GameHud::Initialize(const SceneContext& sceneContext)
 	m_HealthHUD->GetTransform()->Translate(sceneContext.windowWidth - m_pHealthSprite->GetDimensions().x, 80, .9f);
 	m_HealthHUD->GetTransform()->Scale(0.5f, 0.5f, 0.5f);
 
-
+	////////////////////////////////////////////////////////////////////
+	// Coin indicator
+	////////////////////////////////////////////////////////////////////
 	auto coinSprite = new GameObject();
 	coinSprite->AddComponent(new SpriteComponent(L"Textures/Hud/hud_coin_counter.png", { 0.5f,0.5f }, { 1.f,1.f,1.f,.5f }));
 	AddChild(coinSprite);
@@ -82,15 +80,9 @@ void GameHud::Initialize(const SceneContext& sceneContext)
 	coinSprite->GetTransform()->Translate(75, 75, .9f);
 	coinSprite->GetTransform()->Scale(0.5f, 0.5f, 0.5f);
 
-
-	auto specialCoinSprite = new GameObject();
-	specialCoinSprite->AddComponent(new SpriteComponent(L"Textures/Hud/hud_regional_counter.png", { 0.5f,0.5f }, { 1.f,1.f,1.f,.5f }));
-	AddChild(specialCoinSprite);
-
-	specialCoinSprite->GetTransform()->Translate(200, 75, .9f);
-	specialCoinSprite->GetTransform()->Scale(0.5f, 0.5f, 0.5f);
-
-	
+	////////////////////////////////////////////////////////////////////
+	// Seperator
+	////////////////////////////////////////////////////////////////////
 	auto seperator = new GameObject();
 	seperator->AddComponent(new SpriteComponent(L"Textures/Hud/hud_divider.png", { 0.5f,0.5f }, { 1.f,1.f,1.f,.5f }));
 	AddChild(seperator);
@@ -98,7 +90,9 @@ void GameHud::Initialize(const SceneContext& sceneContext)
 	seperator->GetTransform()->Translate(160, 110, .9f);
 	seperator->GetTransform()->Scale(0.6f, 0.6f, 0.6f);
 
-
+	////////////////////////////////////////////////////////////////////
+	// Fill empty moons
+	////////////////////////////////////////////////////////////////////
 	auto moonRow = new GameObject();
 	for (int i{}; i < m_TotalMoons; ++i)
 	{
@@ -125,15 +119,12 @@ void GameHud::Update(const SceneContext& sceneContext)
 {
 	if (!IsActive()) return;
 
-	// TODO: Make seperate prefab of this
+	// Render text
 	XMFLOAT2 livesPosition{ sceneContext.windowWidth - 122, 65 };
 	TextRenderer::Get()->DrawText(m_pFont, StringUtil::utf8_decode(std::to_string(m_Lives)), livesPosition, XMFLOAT4{ 0,0,0,1 });
 
 	XMFLOAT2 coinsPosition{ 100, 60 };
 	TextRenderer::Get()->DrawText(m_pFont, StringUtil::utf8_decode(PadText(m_Coins, 4)), coinsPosition, XMFLOAT4{ 1,1,1,1 });
-
-	XMFLOAT2 specialCoinsPosition{ 220, 60 };
-	TextRenderer::Get()->DrawText(m_pFont, StringUtil::utf8_decode(PadText(m_SpecialCoins, 3)), specialCoinsPosition, XMFLOAT4{ 1,1,1,1 });
 }
 
 std::string GameHud::PadText(int number, int padSize)

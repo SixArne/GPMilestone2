@@ -65,18 +65,21 @@ float4 PS(PS_INPUT input): SV_Target
 {
 	float textureWidth = 0;
     float textureHeight = 0;
+
+    // Sample color
     gTexture.GetDimensions(textureWidth, textureHeight);
     float4 color = gTexture.Sample(samPoint, input.TexCoord);
 
+    // remap UV
 	float2 newUV = input.TexCoord * 2 - 1; 
     float circle = length(newUV);
-    //float mask = 1 - step(gRadius, circle);
+    
+    // Create mask and inverted mask
     float mask = 1 - smoothstep(gRadius, gRadius + (gFeather * sin(gTime)), circle);
     float invertMask = 1 - mask;
 
     float3 displayColor = color.rgb * mask;
     float3 vingColor = color.rgb * invertMask * gColor;
-
 
     return float4(vingColor + displayColor, 1);
 }

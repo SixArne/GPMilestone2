@@ -1,5 +1,5 @@
 #pragma once
-class SkyBox : public GameObject
+class SkyBox final: public GameObject
 {
 public:
 	SkyBox() = default;
@@ -11,6 +11,5 @@ public:
 
 protected:
 	void Initialize(const SceneContext& sceneContext) override;
-	void Update(const SceneContext& sceneContext) override;
 };
 

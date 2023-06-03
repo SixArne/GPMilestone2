@@ -1,5 +1,5 @@
 #pragma once
-class Coin : public GameObject
+class Coin final: public GameObject
 {
 public:
 	Coin() = default;
@@ -20,7 +20,7 @@ private:
 	GameObject* m_pVisuals{};
 
 	float m_Angle{};
-	float m_Oscelator{};
+	float m_Oscillator{};
 
 	bool m_MarkedForDestruction{ false };
 	bool m_HasCallbackTriggered{ false };

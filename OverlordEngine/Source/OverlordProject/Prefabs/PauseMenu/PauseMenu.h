@@ -1,7 +1,7 @@
 #pragma once
 #include "Prefabs/Menu/MenuItem.h"
 
-class PauseMenu : public GameObject
+class PauseMenu final : public GameObject
 {
 public:
 	PauseMenu() = default;

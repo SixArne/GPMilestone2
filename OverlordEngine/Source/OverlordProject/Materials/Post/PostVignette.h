@@ -1,7 +1,7 @@
 #pragma once
 //Resharper Disable All
 
-class PostVignette : public PostProcessingMaterial
+class PostVignette final: public PostProcessingMaterial
 {
 public:
 	PostVignette();

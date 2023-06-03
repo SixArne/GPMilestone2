@@ -1,8 +1,8 @@
 #include "stdafx.h"
 #include "Coin.h"
 #include "Materials/UberMaterial.h"
-#include "Prefabs/Mario.h"
-#include "Prefabs/Character.h"
+#include "Prefabs/Player/Mario.h"
+#include "Prefabs/Player/Character.h"
 
 void Coin::Initialize(const SceneContext&)
 {
@@ -16,9 +16,9 @@ void Coin::Initialize(const SceneContext&)
 
 	visuals->SetMaterial(coinMaterial, 0);
 	
+	auto pDefaultMat = PxGetPhysics().createMaterial(0.5f, 0.5f, 0.8f);
 	
 	m_rb = AddComponent(new RigidBodyComponent());
-	auto pDefaultMat = PxGetPhysics().createMaterial(0.5f, 0.5f, 0.8f);
 	m_rb->SetKinematic(true);
 
 	auto colliderID = m_rb->AddCollider(PxCapsuleGeometry{3,3}, *pDefaultMat);
@@ -34,9 +34,9 @@ void Coin::Initialize(const SceneContext&)
 void Coin::Update(const SceneContext& sceneContext)
 {
 	m_Angle += sceneContext.pGameTime->GetElapsed() * 100;
-	m_Oscelator += sceneContext.pGameTime->GetElapsed();
+	m_Oscillator += sceneContext.pGameTime->GetElapsed();
 
-	GetTransform()->Move(0, sin(m_Oscelator) * .01f, 0);
+	GetTransform()->Move(0, sin(m_Oscillator) * .01f, 0);
 	GetTransform()->Rotate(0, m_Angle, 0);
 
 	if (m_MarkedForDestruction)
@@ -47,6 +47,7 @@ void Coin::Update(const SceneContext& sceneContext)
 
 void Coin::OnGrabCoin(GameObject*, GameObject* pOther, PxTriggerAction action)
 {
+	// Ignore first call
 	if (!m_HasCallbackTriggered)
 	{
 		m_HasCallbackTriggered = true;
@@ -57,11 +58,11 @@ void Coin::OnGrabCoin(GameObject*, GameObject* pOther, PxTriggerAction action)
 	{
 		if (pOther->GetTag() == L"mario")
 		{
-
-			Character* character = reinterpret_cast<Character*>(pOther);
-			Mario* mario = reinterpret_cast<Mario*>(character->GetOwningPrefab());
+			auto character = reinterpret_cast<Character*>(pOther);
+			auto mario = reinterpret_cast<Mario*>(character->GetOwningPrefab());
 			mario->TakeCoin();
 
+			// We can't delete it here so we delay until the next frame
 			m_MarkedForDestruction = true;
 		}
 	}
