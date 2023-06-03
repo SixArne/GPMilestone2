@@ -93,6 +93,7 @@
     <PostBuildEvent />
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Prefabs\Enemies\BanzaiBillLauncher.cpp" />
     <ClCompile Include="Materials\SkyboxMaterial.cpp" />
     <ClCompile Include="Prefabs\PauseMenu\PauseMenu.cpp" />
     <ClCompile Include="Prefabs\SkyBox\SkyBox.cpp" />
@@ -161,6 +162,7 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Prefabs\Enemies\BanzaiBillLauncher.h" />
     <ClInclude Include="Materials\SkyboxMaterial.h" />
     <ClInclude Include="Prefabs\PauseMenu\PauseMenu.h" />
     <ClInclude Include="Prefabs\SkyBox\SkyBox.h" />

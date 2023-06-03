@@ -50,6 +50,7 @@
     <ClCompile Include="Materials\SkyboxMaterial.cpp" />
     <ClCompile Include="Prefabs\SkyBox\SkyBox.cpp" />
     <ClCompile Include="Prefabs\PauseMenu\PauseMenu.cpp" />
+    <ClCompile Include="Prefabs\Enemies\BanzaiBillLauncher.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="MainGame.h" />
@@ -102,5 +103,6 @@
     <ClInclude Include="Materials\SkyboxMaterial.h" />
     <ClInclude Include="Prefabs\SkyBox\SkyBox.h" />
     <ClInclude Include="Prefabs\PauseMenu\PauseMenu.h" />
+    <ClInclude Include="Prefabs\Enemies\BanzaiBillLauncher.h" />
   </ItemGroup>
 </Project>

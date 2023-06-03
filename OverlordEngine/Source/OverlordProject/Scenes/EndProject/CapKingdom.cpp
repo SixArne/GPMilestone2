@@ -15,6 +15,7 @@
 #include "Prefabs/Collectibles/Moon.h"
 #include "Prefabs/SkyBox/SkyBox.h"
 #include "Prefabs/PauseMenu/PauseMenu.h"
+#include "Prefabs/Enemies/BanzaiBillLauncher.h"
 #include <array>
 
 #include "Materials/Shadow/DiffuseMaterial_Shadow.h"
@@ -88,6 +89,16 @@ void CapKingdom::Initialize()
 
 void CapKingdom::Update()
 {
+	if (m_BillsToAdd.size() > 0) 
+	{
+		for (auto bill : m_BillsToAdd)
+		{
+			AddChild(bill);
+			m_Bills.push_back(bill);
+		}
+		m_BillsToAdd.clear();
+	}
+
 	if (m_SceneContext.pInput->IsActionTriggered(PauseMenu::PauseMenuOptions::Open))
 	{
 		m_pPauseMenu->Toggle();
@@ -116,6 +127,21 @@ void CapKingdom::Update()
 	{
 		std::cout << "writing location data" << std::endl;
 		m_LocationWriter.WriteLocation(m_pMarioComponent->GetCharacterController()->GetTransform()->GetWorldPosition());
+
+		auto q = m_pMarioComponent->GetVisuals()->GetTransform()->GetWorldRotation();
+		XMFLOAT3 angles{};
+
+
+		// pitch (y-axis rotation)
+		float sinp = +2.0f * (q.w * q.y - q.z * q.x);
+		if (fabs(sinp) >= 1)
+			angles.y = copysign(3.14159f / 2.f, sinp); // use 90 degrees if out of range
+		else
+			angles.y = asin(sinp);
+
+		angles.y *= (180.f / 3.14159f);
+
+		m_LocationWriter.WriteRotation(angles);
 	}
 #endif // _DEBUG
 
@@ -196,8 +222,10 @@ void CapKingdom::OnGUI()
 	ImGui::Text("using %s", m_FileToSaveTo.data());
 	if (ImGui::Button("use file", ImVec2{ 100, 50 }))
 	{
-		m_LocationWriter.SetFile(m_FileToSaveTo);
-		std::cout << "Now writing to: "<< m_FileToSaveTo << std::endl;
+		std::string newFileName = std::format("spawndata/{}.txt", m_FileToSaveTo.c_str());
+
+		m_LocationWriter.SetFile(newFileName);
+		std::cout << "Now writing to: "<< newFileName << std::endl;
 	}
 #endif
 }
@@ -232,9 +260,11 @@ void CapKingdom::InitSound()
 
 void CapKingdom::OnGameOver()
 {
-	std::cout << "Timer started" << std::endl;
-	TimerManager::Get()->CreateTimer(3.5f, []() {
+	std::cout << "Dead Timer started" << std::endl;
+	TimerManager::Get()->CreateTimer(3.f, [this]() {
 		std::cout << "Mario has died" << std::endl;
+
+		m_pPostProcessEffect->SetIsEnabled(false);
 
 		SceneManager::Get()->PreviousScene();
 	});
@@ -544,21 +574,50 @@ void CapKingdom::CreatePlayer()
 
 void CapKingdom::CreateEnemies()
 {
-	auto coinReader = LocationReader("bills.txt");
-	auto locations = coinReader.ReadLocations();
+	auto billReader = LocationReader("spawndata/bills.txt");
+	auto locations = billReader.ReadLocations();
+	auto rotations = billReader.ReadRotations();
+
+	std::vector<BanzaiBillLauncher*> launchers{};
 
 	for (auto loc : locations)
 	{
-		auto bill = AddChild(new BanzaiBill(m_pMarioComponent));
-		bill->GetTransform()->Translate(loc.x, loc.y + 1, loc.z);
+		auto billLauncher = AddChild(new BanzaiBillLauncher(m_pMarioComponent));
+		billLauncher->GetTransform()->Translate(loc.x, loc.y - 7.f, loc.z);
 
-		bill->SetOnDeathCallback([this, bill]() {
+		// Add for later rotation
+		launchers.push_back(billLauncher);
+
+		billLauncher->SetBillDeathCallback([this](BanzaiBill* bill) {
 			//Remove from m_Bills
 			auto it = std::find(begin(m_Bills), end(m_Bills), bill);
 			m_Bills.erase(it);
-			});
+		});
 
-		m_Bills.push_back(bill);
+		// Scene will handle bills
+		billLauncher->SetBillCreateCallback([this, billLauncher](BanzaiBill* bill) {
+
+			const float spawnDistance = 5.f;
+
+			XMFLOAT3 forward = bill->GetTransform()->GetForward();
+
+			auto spawnerPos = billLauncher->GetTransform()->GetWorldPosition();
+
+			bill->GetTransform()->Translate(
+				spawnerPos.x + forward.x * spawnDistance, 
+				spawnerPos.y + forward.y * spawnDistance, 
+				spawnerPos.z + forward.z * spawnDistance
+			);
+
+			m_BillsToAdd.push_back(bill);
+
+			});
+	}
+
+	// Apply rotations
+	for (int i{}; i < rotations.size(); i++)
+	{
+		launchers[i]->GetTransform()->Rotate(rotations[i].x, rotations[i].y + 180.f, rotations[i].z);
 	}
 }
 
@@ -603,7 +662,7 @@ void CapKingdom::CreatePostProcessEffect()
 
 void CapKingdom::CreateCollectibles()
 {
-	auto coinReader = LocationReader("coins.txt");
+	auto coinReader = LocationReader("spawndata/coins.txt");
 	auto locations = coinReader.ReadLocations();
 
 	for (auto loc : locations)
@@ -615,7 +674,7 @@ void CapKingdom::CreateCollectibles()
 		coin->GetTransform()->Translate(loc.x, loc.y + 1, loc.z);
 	}
 
-	auto moonReader = LocationReader("moons.txt");
+	auto moonReader = LocationReader("spawndata/moons.txt");
 	locations = moonReader.ReadLocations();
 
 	for (auto loc : locations)

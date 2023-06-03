@@ -14,7 +14,7 @@ struct CharacterDesc
 		controller.material = pMaterial;
 	}
 
-	float maxMoveSpeed{ 80.f };
+	float maxMoveSpeed{ 70.f };
 	float maxFallSpeed{ 100.f };
 
 	float JumpSpeed{ 50.f };

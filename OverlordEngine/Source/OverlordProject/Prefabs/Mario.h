@@ -33,6 +33,8 @@ public:
 	XMFLOAT3 GetMarioLocation();
 
 	Character* GetCharacterController();
+	const GameObject* GetVisuals() { return m_pVisuals; };
+
 	void SetOnDieCallback(std::function<void()> callback) { m_OnDieCallback = callback; }
 	void PostInitialize(const SceneContext&) override;
 

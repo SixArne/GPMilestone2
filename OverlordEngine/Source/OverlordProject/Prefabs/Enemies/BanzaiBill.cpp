@@ -137,6 +137,7 @@ XMFLOAT3 BanzaiBill::GetDirectionToMario()
 	XMFLOAT3 delta{ };
 	XMStoreFloat3(&delta, XMVector3Normalize(deltaVector));
 
+	DebugRenderer::DrawLine(marioPosition, billPosition, XMFLOAT4{1,0,0,1});
 
 	return delta;
 }

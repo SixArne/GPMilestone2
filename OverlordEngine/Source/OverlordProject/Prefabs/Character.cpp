@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "Character.h"
+#include "Prefabs/Mario.h"
 
 Character::Character(const CharacterDesc& characterDesc) :
 	m_CharacterDesc{ characterDesc },
@@ -40,6 +41,7 @@ void Character::Initialize(const SceneContext& /*sceneContext*/)
 
 void Character::Update(const SceneContext& sceneContext)
 {
+	if (reinterpret_cast<Mario*>(m_pVisuals->GetParent())->IsDead()) return;
 
 	if (m_pCameraComponent->IsActive())
 	{

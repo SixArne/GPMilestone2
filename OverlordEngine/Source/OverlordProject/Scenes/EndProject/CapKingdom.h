@@ -104,6 +104,7 @@ private:
 	bool m_IsInitialized{ true };
 
 	std::vector<GameObject*> m_CustomObjects{};
+	std::vector<BanzaiBill*> m_BillsToAdd{};
 
 	PostProcessingMaterial* m_pPostProcessEffect{};
 
